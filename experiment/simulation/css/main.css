@@ -1,1 +1,28 @@
-/* You CSS goes in here */
+canvas {
+    border: 1px inset black;
+    width: 75vw;
+    height: 75vh;
+}
+button {
+    border-radius: 5vw;
+    width: 1.5vw;
+    height: 1.5vw;
+    font-size: 1.5vw;
+    display: inline-flex;
+    justify-content: center; /* center the content horizontally */
+    align-items: center;
+    margin: 1vh 1vw 1vh 1vw;
+}
+#outer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2vh 2vw 2vh 2vw;
+}
+#inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5vh 1.5vw 1.5vh 1.5vw;
+}

@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<!-- Add CSS at the head of HTML file -->
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Scalar Logical Clock</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/virtual-labs/virtual-style@0.0.8-b/css/style.min.css">
     <link rel="stylesheet" href="./css/main.css">
 </head>
 <body>
 		<!-- Your code goes here-->
+	<div id="outer">
+		<canvas id="simspace"></canvas>
+		<div id="inner">
+			<button name="plus" onclick="createNode();">+</button>
+			<button name="plus" onclick="deleteNode();">&#8211;</button>
+		</div>
+	</div>
+	
 
 	<!-- Add JS at the bottom of HTML file --> 
+		<script src="https://cdn.jsdelivr.net/gh/virtual-labs/virtual-style@0.0.8-b/js/script.js"></script>
+		<script src="./js/simulation.js"></script>
         <script src="./js/main.js"></script>
 </body>
 </html>

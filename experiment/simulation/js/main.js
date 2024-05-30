@@ -1,1 +1,3 @@
-//Your JavaScript goes in here
+const canvas = document.getElementById("simspace");
+const ctx = canvas.getContext("2d");
+

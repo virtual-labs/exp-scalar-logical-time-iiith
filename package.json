@@ -1,0 +1,15 @@
+{
+  "name": "exp-scalar-logical-time-iiith",
+  "version": "1.0.0",
+  "description": "<b>Discipline | <b>Fill your discipline name here\r :--|:--|\r <b> Lab | <b> Fill your lab name here\r <b> Experiment|     <b> Fill your experiment name and number here",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@virtual-labs/buildexp": "^1.0.5"
+  }
+}
