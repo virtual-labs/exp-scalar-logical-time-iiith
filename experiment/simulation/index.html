@@ -4,23 +4,27 @@
 	<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Scalar Logical Clock</title>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/virtual-labs/virtual-style@0.0.8-b/css/style.min.css">
-    <link rel="stylesheet" href="./css/main.css">
+	<link rel="stylesheet" href="./css/main.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/barecss@1.1.1/css/bare.min.css">
+
 </head>
 <body>
 		<!-- Your code goes here-->
-	<div id="outer">
-		<canvas id="simspace"></canvas>
-		<div id="inner">
-			<button name="plus" onclick="createNode();">+</button>
-			<button name="plus" onclick="deleteNode();">&#8211;</button>
+	<main>
+		<div id = "tellspace">
+				<div id="simspace"></div>
 		</div>
-	</div>
+		<div id="processoradd">
+			<button id="plus">+</button>
+			<button id="minus">&#8211;</button>
+		</div>
+	</main>
 	
 
 	<!-- Add JS at the bottom of HTML file --> 
 		<script src="https://cdn.jsdelivr.net/gh/virtual-labs/virtual-style@0.0.8-b/js/script.js"></script>
-		<script src="./js/simulation.js"></script>
-        <script src="./js/main.js"></script>
+		<script src="./js/helper.js" type="module"></script>
+		<script src="./js/simulation.js" type="module"></script>
+        <script src="./js/main.js" type="module"></script>
 </body>
 </html>

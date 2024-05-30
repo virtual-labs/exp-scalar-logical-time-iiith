@@ -1,28 +1,75 @@
-canvas {
+#tellspace {
     border: 1px inset black;
-    width: 75vw;
-    height: 75vh;
+    width: 90vw;
+    height: 80vh;
+    margin: auto;
+    overflow: scroll;
+    overflow-x: visible;
+    overflow-y: auto;
+    background-color: #d7dee2;
+    padding: 2.5vh 2.5vw 2.5vh 2.5vw;
 }
-button {
-    border-radius: 5vw;
-    width: 1.5vw;
-    height: 1.5vw;
-    font-size: 1.5vw;
+
+#simspace {
+    height: 100%;
+    direction: ltr;
+    opacity: 1;
+}
+
+#user {
+    width: min(4vw, 200px);
+    height: min(4vw, 200px);
+    font-size: min(3vw, 150px);
     display: inline-flex;
     justify-content: center; /* center the content horizontally */
     align-items: center;
-    margin: 1vh 1vw 1vh 1vw;
 }
-#outer {
+
+.slider-container {
+    width: 100%;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-wrap: nowrap;
+    flex-flow: row;
     justify-content: center;
-    padding: 2vh 2vw 2vh 2vw;
+    align-items: center;
+    padding: min(1vh, 10px);
+    margin: min(1vh, 10px);
 }
-#inner {
+
+.increment {
+    height: max(min(5vh, 1.5em), 20px);
+    width: max(min(5vw, 3em), 20px);
+    margin: 0 min(1vw,10px) 0 0;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: max(min(3vh, 50px), 20px);
+    border: 1 px sloid black;
+    background-color:  #dee2d7;
+    opacity: 0.5;
+    margin: 3px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    padding: 1.5vh 1.5vw 1.5vh 1.5vw;
+    align-items: center;
+}
+
+.slider:hover {
+    background-color: #e2dcd7;
+}
+
+.slider-bone {
+    width: 100%;
+    height: max(min(1vh, 3px), 1px);
+    background-color: black;
+    opacity: 1;
+}
+
+.event {
+    width: max(min(3vh, 50px), 20px);
+    height: max(min(3vh, 50px), 20px);
+    border-radius: max(min(1.5vh, 25px), 5px);
+
 }
