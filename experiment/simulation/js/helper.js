@@ -16,7 +16,8 @@ export function getPosition(el) {
    
         xPosition += (el.offsetLeft - xScrollPos + el.clientLeft);
         yPosition += (el.offsetTop - yScrollPos + el.clientTop);
-      } else {
+      } 
+      else {
         xPosition += (el.offsetLeft - el.scrollLeft + el.clientLeft);
         yPosition += (el.offsetTop - el.scrollTop + el.clientTop);
       }

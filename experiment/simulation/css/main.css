@@ -63,13 +63,7 @@ h3.cp {
     height: max(min(1vh, 3px), 1px);
     background-color: black;
     opacity: 1;
-}
-
-.event {
-    width: max(min(3vh, 50px), 20px);
-    height: max(min(3vh, 50px), 20px);
-    border-radius: max(min(1.5vh, 25px), 5px);
-
+    position: relative;
 }
 
 #buttonspace {
@@ -150,4 +144,18 @@ input[type=number]
     position: absolute;
     bottom: 0px;
     height: 50%;
+}
+
+.event {
+    border-radius: 7.5px;
+    border: 2px solid black;
+    height: 15px;
+    width: 15px;
+    background-color: #949494;
+    position: absolute;
+    bottom: -6px;
+}
+
+.event:hover {
+    box-shadow: 0 0 6px rgba(35, 173, 278, 1);
 }

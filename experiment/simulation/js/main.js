@@ -1,7 +1,7 @@
 "use strict";
 
 import { computeScalar, createEvent, createMessage } from "./simulation.js";
-import { isElement } from "./helper.js";
+import { isElement, getPosition } from "./helper.js";
 
 const tellspace = document.getElementById("tellspace");
 // Area of work
@@ -12,10 +12,10 @@ const simspace = document.getElementById("simspace");
 const nodes = [];
 // An array of all nodes in the distributed system
 
-const events = new Map();
+const events = [];
 // Mapping each node to an event
 
-const messages = new Map();
+const messages = [];
 // Mapping each node to a message
 
 let addEventsMessage = true;
@@ -28,14 +28,21 @@ function manageTime(event) {
     if (!ticking) {
         const scrollwidth = tellspace.scrollWidth;
         const clientwidth = tellspace.clientWidth;
+        // Getting real width and displayed width in pixels
+
         const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
+        // Getting current width
+
         window.requestAnimationFrame(function() {
+            // If a scrollbar is required
             if(scrollwidth > clientwidth) {
                 if(scrollwidth - clientwidth <= tellspace.scrollLeft) {
+                    // If the scrollbar is at max left, add some more space
                     tellspace.scrollTo(scrollwidth - clientwidth - 4, 0);
                     simspace.style.width = String(curwidth + 5) + 'px';
                 }
                 else if (tellspace.scrollLeft <= 0 && curwidth - 5 >= clientwidth) {
+                    // If the scrollbar is at max right delete some space
                     tellspace.scrollTo(scrollwidth - clientwidth + 4, 0);
                     simspace.style.width = String(curwidth - 5) + 'px';
                 }
@@ -82,6 +89,45 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     }   
 }
 
+// Creates the visual event and logs it
+function createEventvisual(event) {
+    const shapeOffset = 7.5;
+    if(event.button < 4) {
+        // Only when any mouse buttons are pressed
+        if (addEventsMessage) {
+            if(!(event.target.className == "event")) {
+                // We don't want one event on top of another for the sake of clarity
+                const toadd = document.createElement("div");
+                toadd.className = "event";
+                toadd.style.left = String(event.offsetX - shapeOffset) + "px";
+                // Take 7.5 from size of the event button? itself
+                const roundedX = Math.round(event.offsetX);
+                // Rounding value to an integer, so it can be compared with and deleted later. No danger of overlap as shapes are > 1px
+                toadd.dataset.myx = roundedX.toString();
+                // Saving identifier for use in deletion
+                event.target.appendChild(toadd);
+                // Adding element
+                events.push(createEvent(roundedX, event.target.dataset.process));
+            }
+        }
+        else {
+            if(event.target.className == "event") {
+                const rindx = events.map(
+                    function(e) {
+                        return e.t;
+                    }
+                    ).indexOf(parseInt(event.target.dataset.myx));
+                // Getting identifier from target
+                if(rindx > -1) {
+                    events.splice(rindx, 1);
+                }
+                // Removing element based on target
+                event.currentTarget.removeChild(event.target);
+            }
+        }
+    }
+}
+
 function createNode() {
     
     const inmin = 1;
@@ -106,6 +152,8 @@ function createNode() {
     
     const toadd4 = document.createElement("div");
     toadd4.className = "slider-bone";
+    toadd4.dataset.process = nodes.length;
+    toadd4.addEventListener("click", createEventvisual);
     toadd3.appendChild(toadd4);
     // Adding straight line representing timeline
     
