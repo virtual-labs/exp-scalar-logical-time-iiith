@@ -16,13 +16,13 @@ const nodes = [];
 // An array of all nodes in the distributed system
 
 const events = [];
-// Mapping each node to an event
+// Array of all events
 
 let max_events_offset = 0;
 // Local Co-ordinates in simspace  of the rightmost event
 
 const messages = [];
-// Mapping each node to a message
+// Array of all events
 
 let addEventsMessage = true;
 // Used with buttons in eventadd div to see whether events and messages should be added or deleted
@@ -208,6 +208,12 @@ function deleteNode() {
     nodes.pop();
     if(isElement(simspace.lastElementChild)) {
         simspace.removeChild(simspace.lastElementChild);
+    }
+    let i = events.length;
+    while(i-- > 0) {
+        if(parseInt(events[i].p) >= nodes.length) {
+            events.splice(i, 1);
+        } 
     }
 }
 
