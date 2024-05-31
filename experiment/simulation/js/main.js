@@ -9,11 +9,17 @@ const tellspace = document.getElementById("tellspace");
 const simspace = document.getElementById("simspace");
 // Used to store containers
 
+const messagespace = document.getElementById("messagespace");
+// Used to draw lines between events
+
 const nodes = [];
 // An array of all nodes in the distributed system
 
 const events = [];
 // Mapping each node to an event
+
+let max_events_offset = 0;
+// Local Co-ordinates in simspace  of the rightmost event
 
 const messages = [];
 // Mapping each node to a message
@@ -30,6 +36,8 @@ function manageTime(event) {
         const clientwidth = tellspace.clientWidth;
         // Getting real width and displayed width in pixels
 
+        const vw = Math.min(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100, 10);
+
         const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
         // Getting current width
 
@@ -41,9 +49,10 @@ function manageTime(event) {
                     tellspace.scrollTo(scrollwidth - clientwidth - 4, 0);
                     simspace.style.width = String(curwidth + 5) + 'px';
                 }
-                else if (tellspace.scrollLeft <= 0 && curwidth - 5 >= clientwidth) {
+                else if (tellspace.scrollLeft <= 0 && curwidth - 5 >= clientwidth && curwidth - 13 - 10 * vw >= max_events_offset) {
                     // If the scrollbar is at max right delete some space
-                    tellspace.scrollTo(scrollwidth - clientwidth + 4, 0);
+                    // Don't let the space get too small or shrink beyond an event
+                    tellspace.scrollTo(4, 0);
                     simspace.style.width = String(curwidth - 5) + 'px';
                 }
             }
@@ -102,26 +111,48 @@ function createEventvisual(event) {
                 toadd.style.left = String(event.offsetX - shapeOffset) + "px";
                 // Take 7.5 from size of the event button? itself
                 const roundedX = Math.round(event.offsetX);
-                // Rounding value to an integer, so it can be compared with and deleted later. No danger of overlap as shapes are > 1px
+                // Rounding value to an integer, so it can be compared with and deleted later. No danger of overlap as shapes are > 1px and can't overlap
+                if(roundedX > max_events_offset) {
+                    max_events_offset = event.offsetX;
+                }
+                // If this is the rightmost event so far, designate it
                 toadd.dataset.myx = roundedX.toString();
                 // Saving identifier for use in deletion
                 event.target.appendChild(toadd);
                 // Adding element
                 events.push(createEvent(roundedX, event.target.dataset.process));
+                console.log(events);
             }
         }
         else {
             if(event.target.className == "event") {
-                const rindx = events.map(
+                const intx = parseInt(event.target.dataset.myx);
+                const emap = events.map(
                     function(e) {
                         return e.t;
                     }
-                    ).indexOf(parseInt(event.target.dataset.myx));
+                    );
+                const rindx = emap.indexOf(intx);
                 // Getting identifier from target
                 if(rindx > -1) {
                     events.splice(rindx, 1);
                 }
                 // Removing element based on target
+                console.log(events);
+                if(intx === max_events_offset) {
+                    if (events.length >= 1) {
+                        max_events_offset = Math.max.apply(null, events.map(
+                            function(e) {
+                                return e.t;
+                            }
+                            ));
+                    }
+                    else {
+                        max_events_offset = 0;
+                    }
+                    console.log(max_events_offset);
+                }
+                // If the maximum element has just been removed, find a new maximum
                 event.currentTarget.removeChild(event.target);
             }
         }
