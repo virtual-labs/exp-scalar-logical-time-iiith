@@ -48,16 +48,16 @@ h3.cp {
     width: 100%;
     height: max(min(3vh, 50px), 20px);
     border: 1 px sloid black;
-    background-color:  #dee2d7;
-    opacity: 0.5;
+    opacity: 1;
     margin: 3px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.slider:hover {
-    background-color: #e2dcd7;
+.slider-bone:hover {
+    opacity: 0.7;
+    box-shadow: 0 0 6px rgba(35, 173, 278, 1);
 }
 
 .slider-bone {
@@ -66,6 +66,7 @@ h3.cp {
     background-color: black;
     opacity: 1;
     position: relative;
+    box-shadow: 0 0 1px rgba(35, 35, 35, 1);
 }
 
 #buttonspace {
@@ -168,4 +169,10 @@ input[type=number]
     height: 100%;
     position: absolute;
     z-index: 1;
+}
+
+line.message {
+    opacity: 1;
+    stroke: black;
+    stroke-width: 2.5px;
 }

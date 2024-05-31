@@ -1,7 +1,7 @@
 "use strict";
 
 import { computeScalar, createEvent, createMessage } from "./simulation.js";
-import { isElement, getPosition } from "./helper.js";
+import { isElement, getPosition, getRelativePosition } from "./helper.js";
 
 const tellspace = document.getElementById("tellspace");
 // Area of work
@@ -29,6 +29,10 @@ let addEventsMessage = true;
 
 let ticking = false;
 // Used to throttle events
+
+let messagestate = 0;
+let currentMessage = null;
+let fromMessage = null;
 
 function manageTime(event) {
     if (!ticking) {
@@ -98,63 +102,134 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     }   
 }
 
-// Creates the visual event and logs it
-function createEventvisual(event) {
-    const shapeOffset = 7.5;
+const shapeOffset = 7.5;
+
+// Creating an event
+function createEventVisual(target, offsetX) {
+    const toadd = document.createElement("div");
+    toadd.className = "event";
+    toadd.style.left = String(offsetX - shapeOffset) + "px";
+    // Take 7.5 from size of the event button? itself
+    const roundedX = Math.round(offsetX);
+    // Rounding value to an integer, so it can be compared with and deleted later. No danger of overlap as shapes are > 1px and can't overlap
+    if(roundedX > max_events_offset) {
+        max_events_offset = offsetX;
+    }
+    // If this is the rightmost event so far, designate it
+    toadd.dataset.myx = roundedX.toString();
+    toadd.dataset.process = target.dataset.process;
+    // Saving identifier for use in deletion
+    target.appendChild(toadd);
+    // Adding element
+    events.push(createEvent(roundedX, target.dataset.process));
+    console.log(events);
+}
+
+//Deleting an event
+function deleteEventVisual(target, currentTarget) {
+    const intx = parseInt(target.dataset.myx); 
+    const rindx = events.map(
+        function(e) {
+            return e.t;
+        }
+        ).indexOf(intx);
+    // Getting identifier from target
+    if(rindx > -1) {
+        events.splice(rindx, 1);
+    }
+    // Removing element based on target
+    console.log(events);
+    if(intx === max_events_offset) {
+        if (events.length >= 1) {
+            max_events_offset = Math.max.apply(null, events.map(
+                function(e) {
+                    return e.t;
+                }
+                ));
+        }
+        else {
+            max_events_offset = 0;
+        }
+        console.log(max_events_offset);
+    }
+    // If the maximum element has just been removed, find a new maximum
+    currentTarget.removeChild(target);
+}
+
+// Manages event creation
+function manageEventVisual(event) {
     if(event.button < 4) {
         // Only when any mouse buttons are pressed
         if (addEventsMessage) {
             if(!(event.target.className == "event")) {
                 // We don't want one event on top of another for the sake of clarity
-                const toadd = document.createElement("div");
-                toadd.className = "event";
-                toadd.style.left = String(event.offsetX - shapeOffset) + "px";
-                // Take 7.5 from size of the event button? itself
-                const roundedX = Math.round(event.offsetX);
-                // Rounding value to an integer, so it can be compared with and deleted later. No danger of overlap as shapes are > 1px and can't overlap
-                if(roundedX > max_events_offset) {
-                    max_events_offset = event.offsetX;
-                }
-                // If this is the rightmost event so far, designate it
-                toadd.dataset.myx = roundedX.toString();
-                // Saving identifier for use in deletion
-                event.target.appendChild(toadd);
-                // Adding element
-                events.push(createEvent(roundedX, event.target.dataset.process));
-                console.log(events);
+                createEventVisual(event.target, event.offsetX);
             }
         }
         else {
             if(event.target.className == "event") {
-                const intx = parseInt(event.target.dataset.myx);
-                const emap = events.map(
-                    function(e) {
-                        return e.t;
-                    }
-                    );
-                const rindx = emap.indexOf(intx);
-                // Getting identifier from target
-                if(rindx > -1) {
-                    events.splice(rindx, 1);
-                }
-                // Removing element based on target
-                console.log(events);
-                if(intx === max_events_offset) {
-                    if (events.length >= 1) {
-                        max_events_offset = Math.max.apply(null, events.map(
-                            function(e) {
-                                return e.t;
-                            }
-                            ));
-                    }
-                    else {
-                        max_events_offset = 0;
-                    }
-                    console.log(max_events_offset);
-                }
-                // If the maximum element has just been removed, find a new maximum
-                event.currentTarget.removeChild(event.target);
+                deleteEventVisual(event.target, event.currentTarget);
             }
+        }
+    }
+}
+
+// Creates mesages
+function createMessageVisual(event) {
+    if(addEventsMessage && event.target.className === "slider-bone" && event.button < 4) {
+        if (!(messagestate === 1)) {
+            const toadd = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            toadd.setAttribute("class", "message");
+            toadd.setAttribute("x1", String(event.offsetX) + 'px');
+            toadd.setAttribute("y1", String(getRelativePosition(event.target, event.currentTarget).y) + 'px');
+            messagespace.appendChild(toadd);
+            currentMessage = toadd;
+            fromMessage = event.target;
+            messagestate = 1;
+        }
+        // Signal start of a potential message
+    }
+}
+
+// Visualize creation
+function dragMessageVisual(event) {
+    if ((!ticking) && messagestate === 1) {
+        window.requestAnimationFrame(function() {
+            currentMessage.setAttribute("x2", event.offsetX.toString() + 'px');
+            currentMessage.setAttribute("y2", event.offsetY.toString() + 'px');
+            ticking = false;
+        });
+        ticking = true;
+    }
+}
+
+// Common tasks for faliing to create a message
+function failedMessageVisual() {
+    messagestate = 2;
+    messagespace.removeChild(currentMessage);
+    currentMessage = null;
+    fromMessage = null;
+    messagestate = 0;
+}
+
+// Creation of message failed - mouse left simspace
+function endDragMessageVisual(event) {
+    if((!ticking) && messagestate === 1) {
+        failedMessageVisual();
+    }
+}
+
+// Creation of message ended in a point inside simspace
+function finishDragMessageVisual(event) {
+    if((!ticking) && messagestate === 1) {
+        if(event.target.className === "slider-bone" && !(fromMessage === event.target)) {
+            messagestate = 3;
+            currentMessage.setAttribute("x2", event.offsetX.toString() + 'px');
+            currentMessage.setAttribute("y2", String(getRelativePosition(event.target, event.currentTarget).y) + 'px');
+            messagestate = 0;
+        }
+        else {
+            failedMessageVisual();
         }
     }
 }
@@ -184,7 +259,7 @@ function createNode() {
     const toadd4 = document.createElement("div");
     toadd4.className = "slider-bone";
     toadd4.dataset.process = nodes.length;
-    toadd4.addEventListener("click", createEventvisual);
+    toadd4.addEventListener("click", manageEventVisual);
     toadd3.appendChild(toadd4);
     // Adding straight line representing timeline
     
@@ -215,6 +290,7 @@ function deleteNode() {
             events.splice(i, 1);
         } 
     }
+    // Removing invalid events
 }
 
 const addMode = document.getElementById("add"); 
@@ -247,6 +323,10 @@ function inputMode(event) {
 
 simspace.style.width = tellspace.clientWidth.toString() + 'px';
 tellspace.addEventListener("scroll", manageTime);
+simspace.addEventListener("mousedown", createMessageVisual);
+simspace.addEventListener("mousemove", dragMessageVisual);
+simspace.addEventListener("mouseleave", endDragMessageVisual);
+simspace.addEventListener("mouseup", finishDragMessageVisual);
 document.getElementById("plus").addEventListener("click", createNode);
 document.getElementById("minus").addEventListener("click", deleteNode);
 addMode.addEventListener("click", inputMode);
