@@ -1,7 +1,14 @@
+h3.cp {
+    margin: 0px min(1.5vw, 5px) auto min(1.5vw, 5px);
+    padding: min(1vh, 5px) min(1vw, 5px);
+    color: #445566;
+    font-weight: 500;
+}
+
 #tellspace {
     border: 1px inset black;
     width: 90vw;
-    height: 80vh;
+    height: 60vh;
     margin: auto;
     overflow: scroll;
     overflow-x: visible;
@@ -14,15 +21,6 @@
     height: 100%;
     direction: ltr;
     opacity: 1;
-}
-
-#user {
-    width: min(4vw, 200px);
-    height: min(4vw, 200px);
-    font-size: min(3vw, 150px);
-    display: inline-flex;
-    justify-content: center; /* center the content horizontally */
-    align-items: center;
 }
 
 .slider-container {
@@ -72,4 +70,84 @@
     height: max(min(3vh, 50px), 20px);
     border-radius: max(min(1.5vh, 25px), 5px);
 
+}
+
+#buttonspace {
+    width: 100%;
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: min(1vh, 5px) min(1vw, 5px);
+    padding: min(1vh, 5px) min(1vw, 5px);
+}
+
+#processoradd {
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;   
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button
+{
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number]
+{
+  -moz-appearance: textfield;
+  appearance: textfield;
+  height: 35px;
+  width: 52px;
+  font-size: 18px;
+  line-height: 26px;
+}
+
+.quantity-nav {
+    float: left;
+    position: relative;
+    height: 35px;
+}
+  
+.quantity-button {
+    position: relative;
+    cursor: pointer;
+    border-left: 1px solid #536475;
+    width: 20px;
+    text-align: center;
+    color: #333;
+    font-size: 11px;
+    font-family: "Trebuchet MS", Helvetica, sans-serif !important;
+    line-height: 1.7;
+    -webkit-transform: translateX(-150%);
+    transform: translateX(-150%);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+.quantity-button.quantity-up:hover {
+    background-color: #BDC;
+}
+
+.quantity-button.quantity-down:hover {
+    background-color: #DBC;
+}
+
+.quantity-button.quantity-up {
+    position: absolute;
+    height: 50%;
+    top: 0;
+    border-bottom: 1px solid #536475;
+}
+  
+.quantity-button.quantity-down {
+    position: absolute;
+    bottom: 0px;
+    height: 50%;
 }

@@ -1,3 +1,3 @@
 ### Aim of the experiment
 
-
+Measuring time is important for practical reasons — timestamps for transactions, backup, and ordering content. It is vital for the design and analysis of the systems themselves. This measurement derives from the *ordering* of events (that of a clock tick) themselves. Logical clocks avoid this intermediate representation by exploiting ordering in an element of a system and between elements in a system. The simplest such clock is scalar logical time.
