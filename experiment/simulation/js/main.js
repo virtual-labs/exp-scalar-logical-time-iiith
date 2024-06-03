@@ -35,6 +35,7 @@ let messagestate = 0;
 let currentMessage = null;
 let fromMessage = null;
 let fromEvent = null;
+let fromEventobj = null;
 // Used for creating message
 
 const shapeOffset = 7.5;
@@ -135,14 +136,16 @@ function createEventVisual(target, offsetX) {
     // Saving identifier for use in deletion
     target.appendChild(toadd);
     // Adding element
-    events.push(createEvent(roundedX, target.dataset.process));
+    const toadd2 = createEvent(roundedX, target.dataset.process);
+    events.push(toadd2);
     console.log(events);
-    return toadd;
+    return [toadd, toadd2];
 }
 
 //Deleting an event
 function deleteEventVisual(target, currentTarget) {
-    const intx = parseInt(target.dataset.myx); 
+    const intx = parseInt(target.dataset.myx);
+    let toreturn = null; 
     const rindx = events.map(
         function(e) {
             return e.t;
@@ -150,6 +153,7 @@ function deleteEventVisual(target, currentTarget) {
         ).indexOf(intx);
     // Getting identifier from target
     if(rindx > -1) {
+        toreturn = events[rindx];
         events.splice(rindx, 1);
     }
     // Removing element based on target
@@ -169,9 +173,10 @@ function deleteEventVisual(target, currentTarget) {
     }
     // If the maximum element has just been removed, find a new maximum
     currentTarget.removeChild(target);
+    return toreturn;
 }
 
-// Manages event creation
+// Manages event creation and deletion
 function manageEventVisual(event) {
     if(event.button < 4) {
         // Only when any mouse buttons are pressed
@@ -185,13 +190,77 @@ function manageEventVisual(event) {
             if(event.target.className == "event") {
                 deleteEventVisual(event.target, event.currentTarget);
             }
+            else if (
+                Array.from(event.target.classList).some(
+                    function(item) {
+                        return item === "from" || item === "to";
+                })
+            ) {
+                const messagelist = messagespace.getElementsByClassName("message");
+                for (const message of messagelist) {
+                    if (
+                            (event.target.dataset.myx === message.dataset.fromx
+                                && 
+                            event.target.dataset.process === message.dataset.fromprocess
+                            ) || 
+                            (event.target.dataset.myx === message.dataset.tox
+                                &&
+                            event.target.dataset.process === message.dataset.toprocess
+                            )
+                    ) {
+                        const linelement = message.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line");
+                        if (linelement.length === 1) {
+                            console.log(linelement);
+                            deleteMessage(linelement[0]);    
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
-// Deletes messages
+// Deletes messages. Accepts the line SVG object connecting the two processes as argument
+function deleteMessage(target) {
+    const parentElement = target.parentElement;
+    if(!(parentElement === null)) {
+        const fromprocess = parentElement.dataset.fromprocess;
+        const toprocess = parentElement.dataset.toprocess;
+        const fromx = parentElement.dataset.fromx;
+        const tox = parentElement.dataset.tox;
+        const eventlist = Array.from(simspace.getElementsByClassName("event"));
+        const fromevent = [];
+        const toevent = [];
+        for(const event of eventlist) {
+            if (event.dataset.myx === fromx && event.dataset.process === fromprocess) {
+                fromevent.push(deleteEventVisual(event, event.parentElement));
+            }
+            if(event.dataset.myx === tox && event.dataset.process === toprocess) {
+                toevent.push(deleteEventVisual(event, event.parentElement));
+            }
+        }
+        const grandParent = parentElement.parentElement;
+        grandParent.removeChild(parentElement);
+        for(let i = messages.length - 1; i >= 0; i--) {
+            if(
+                fromevent.some(function(item) {
+                    return item === messages[i].event1
+                }) &&
+                toevent.some(function(item) {
+                    return item === messages[i].event2
+                })) {
+                    messages.splice(i, 1);
+                }
+        }
+        console.log(messages);
+    }
+}
+
+// Deletes messages on mouse event
 function deleteMessageVisual(event) {
-    
+    if(!addEventsMessage && event.target === event.currentTarget && event.button < 4) {
+        deleteMessage(event.target);
+    }
 }
 
 // Creates mesages
@@ -210,7 +279,7 @@ function createMessageVisual(event) {
             // Making the line visible
             currentMessage = toadd;
             fromMessage = event.target;
-            fromEvent = createEventVisual(event.target, event.offsetX);
+            [fromEvent, fromEventobj] = createEventVisual(event.target, event.offsetX);
             messagestate = 1;
         }
         // Signal start of a potential message
@@ -238,6 +307,7 @@ function failedMessageVisual() {
     currentMessage = null;
     fromMessage = null;
     fromEvent = null;
+    fromEventobj = null;
     messagestate = 0;
 }
 
@@ -300,18 +370,32 @@ function finishDragMessageVisual(event) {
             const relpos = getRelativePosition(event.target, event.currentTarget);
             currentMessage.setAttributeNS(null, "x2", String(relpos.x + event.offsetX) + 'px');
             currentMessage.setAttributeNS(null, "y2", String(relpos.y) + 'px');
-            const toEvent = createEventVisual(event.target, event.offsetX);
+            const [toEvent, toEventobj] = createEventVisual(event.target, event.offsetX);
+            toEvent.classList.add('to');
             // Setting message endpoint for line
+            fromEvent.classList.add('from');
+            // Setting message startpoint for line
             messagespace.removeChild(currentMessage);
             // Removing temporary line
+            currentMessage.addEventListener("click", deleteMessageVisual);
+            // Adding event listener for deletion
             messagespace.appendChild(
                 drawMessage(currentMessage, fromMessage.dataset.process,
                 event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
             );
             // Adding graphics group to show
+            messages.push(
+                createMessage(
+                    fromEventobj,
+                    toEventobj
+                )
+            );
+            console.log(messages);
+            // Adding record of message to list of messages
             currentMessage = null;
             fromMessage = null;
             fromEvent = null;
+            fromEventobj = null;
             messagestate = 0;
             // Resetting state for next message
         }
@@ -409,10 +493,9 @@ function inputMode(event) {
 function windowChange(event) {
     const vw = Math.min(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100, 10);
     const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
-    //if (tellspace.clientWidth > mysteryAdjustment(curwidth, vw, max_events_offset)) {
+    if (tellspace.clientWidth > mysteryAdjustment(curwidth, vw, max_events_offset)) {
         simspace.style.width = tellspace.clientWidth.toString() + 'px';
-        console.log(event.target);
-    //}
+    }
     // Try to take up all available screen width
     simpos = getPosition(simspace);
     // Getting position of simspace for use everywhere
@@ -423,7 +506,6 @@ function windowChange(event) {
         for (const child of Array.from(simspace.getElementsByClassName("slider-bone"))) {
             processBones.set(child.dataset.process, getRelativePosition(child, simspace).y);
         }
-        console.log(processBones);
         while(messagespace.firstChild) {
             messagespace.firstChild.remove();
         }

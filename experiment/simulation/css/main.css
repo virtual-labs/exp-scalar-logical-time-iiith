@@ -160,6 +160,13 @@ input[type=number]
     z-index: 3;
 }
 
+.event.to {
+    border-radius: 5px;
+    height: 10px;
+    width: 10px;
+    transform: translate(2.5px, -2.5px);
+}
+
 .event:hover {
     box-shadow: 0 0 6px rgba(35, 173, 278, 1);
 }
@@ -171,8 +178,19 @@ input[type=number]
     z-index: 1;
 }
 
-line.message {
+.message {
     opacity: 1;
     stroke: black;
-    stroke-width: 2.5px;
+    stroke-width: 3px;
+}
+
+.message>line:hover {
+    filter: drop-shadow(0 0 6px rgba(35, 173, 278, 1));
+}
+
+.message-arrow {
+    stroke-width: 1px;
+    fill: #247c59;
+    stroke:#18543c;
+    filter: drop-shadow( 1px 1px 2px rgb(226, 255, 243));
 }

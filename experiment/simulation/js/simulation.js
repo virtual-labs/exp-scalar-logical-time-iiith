@@ -28,7 +28,7 @@ class Message {
         this.e1 = event1;
         this.e2 = event2;
     }
-    get e1() {
+    get event1() {
         if (this.e1 instanceof Event) {
             return this.e1;
         }
@@ -37,10 +37,10 @@ class Message {
             throw new ReferenceError('Cannot find object');
         }
     }
-    set e1(event) {
+    set event1(event) {
 
     }
-    get e2() {
+    get event2() {
         if (this.e2 instanceof Event) {
             return this.e2;
         }
@@ -49,7 +49,7 @@ class Message {
             throw new ReferenceError('Cannot find object');
         }
     }
-    set e2 (event) {
+    set event2 (event) {
 
     }
 }
