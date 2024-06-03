@@ -1,12 +1,13 @@
 "use strict";
 
 import { computeScalar, createEvent, createMessage } from "./simulation.js";
-import { isElement, getPosition, getRelativePosition } from "./helper.js";
+import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel } from "./helper.js";
 
 const tellspace = document.getElementById("tellspace");
 // Area of work
 
 const simspace = document.getElementById("simspace");
+let simpos = null;
 // Used to store containers
 
 const messagespace = document.getElementById("messagespace");
@@ -22,7 +23,7 @@ let max_events_offset = 0;
 // Local Co-ordinates in simspace  of the rightmost event
 
 const messages = [];
-// Array of all events
+// Array of all messages
 
 let addEventsMessage = true;
 // Used with buttons in eventadd div to see whether events and messages should be added or deleted
@@ -33,7 +34,22 @@ let ticking = false;
 let messagestate = 0;
 let currentMessage = null;
 let fromMessage = null;
+let fromEvent = null;
+// Used for creating message
 
+const shapeOffset = 7.5;
+// Related to size of event marker
+
+const addMode = document.getElementById("add"); 
+const subMode = document.getElementById("subtract");
+// Buttons for changing between adding and subtracting events
+
+// Function is used to determine whether the current width can hold all events. Empirically determined
+function mysteryAdjustment(curwidth, vw, max_events_offset) {
+    return curwidth - 13 - 10 * vw >= max_events_offset;
+}
+
+// Function is used to adjust time
 function manageTime(event) {
     if (!ticking) {
         const scrollwidth = tellspace.scrollWidth;
@@ -48,13 +64,13 @@ function manageTime(event) {
         window.requestAnimationFrame(function() {
             // If a scrollbar is required
             if(scrollwidth > clientwidth) {
-                if(scrollwidth - clientwidth <= tellspace.scrollLeft) {
-                    // If the scrollbar is at max left, add some more space
+                if(scrollwidth - clientwidth <= tellspace.scrollLeft + 1) {
+                    // If the scrollbar is at max right, add some more space
                     tellspace.scrollTo(scrollwidth - clientwidth - 4, 0);
                     simspace.style.width = String(curwidth + 5) + 'px';
                 }
-                else if (tellspace.scrollLeft <= 0 && curwidth - 5 >= clientwidth && curwidth - 13 - 10 * vw >= max_events_offset) {
-                    // If the scrollbar is at max right delete some space
+                else if (tellspace.scrollLeft <= 1 && curwidth - 5 >= clientwidth && mysteryAdjustment(curwidth, vw, max_events_offset)) {
+                    // If the scrollbar is at max left delete some space
                     // Don't let the space get too small or shrink beyond an event
                     tellspace.scrollTo(4, 0);
                     simspace.style.width = String(curwidth - 5) + 'px';
@@ -102,8 +118,6 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     }   
 }
 
-const shapeOffset = 7.5;
-
 // Creating an event
 function createEventVisual(target, offsetX) {
     const toadd = document.createElement("div");
@@ -123,6 +137,7 @@ function createEventVisual(target, offsetX) {
     // Adding element
     events.push(createEvent(roundedX, target.dataset.process));
     console.log(events);
+    return toadd;
 }
 
 //Deleting an event
@@ -174,17 +189,28 @@ function manageEventVisual(event) {
     }
 }
 
+// Deletes messages
+function deleteMessageVisual(event) {
+    
+}
+
 // Creates mesages
 function createMessageVisual(event) {
     if(addEventsMessage && event.target.className === "slider-bone" && event.button < 4) {
         if (!(messagestate === 1)) {
             const toadd = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            toadd.setAttribute("class", "message");
-            toadd.setAttribute("x1", String(event.offsetX) + 'px');
-            toadd.setAttribute("y1", String(getRelativePosition(event.target, event.currentTarget).y) + 'px');
+            toadd.setAttributeNS(null, "class", "message");
+            const relPos = getRelativePosition(event.target, event.currentTarget);
+            toadd.setAttributeNS(null, "x1", String(event.offsetX + relPos.x) + 'px');
+            toadd.setAttributeNS(null, "y1", String(relPos.y) + 'px');
+            toadd.setAttributeNS(null, "x2", String(event.offsetX + relPos.x) + 'px');
+            toadd.setAttributeNS(null, "y2", String(relPos.y) + 'px');
+            // Creating temporary line for guiding message drawing
             messagespace.appendChild(toadd);
+            // Making the line visible
             currentMessage = toadd;
             fromMessage = event.target;
+            fromEvent = createEventVisual(event.target, event.offsetX);
             messagestate = 1;
         }
         // Signal start of a potential message
@@ -195,11 +221,12 @@ function createMessageVisual(event) {
 function dragMessageVisual(event) {
     if ((!ticking) && messagestate === 1) {
         window.requestAnimationFrame(function() {
-            currentMessage.setAttribute("x2", event.offsetX.toString() + 'px');
-            currentMessage.setAttribute("y2", event.offsetY.toString() + 'px');
+            currentMessage.setAttributeNS(null, "x2", String(event.clientX - simpos.x) + 'px');
+            currentMessage.setAttributeNS(null, "y2", String(event.clientY - simpos.y) + 'px');
             ticking = false;
         });
         ticking = true;
+        // Throttling events to follow mouse
     }
 }
 
@@ -207,8 +234,10 @@ function dragMessageVisual(event) {
 function failedMessageVisual() {
     messagestate = 2;
     messagespace.removeChild(currentMessage);
+    deleteEventVisual(fromEvent, fromMessage);
     currentMessage = null;
     fromMessage = null;
+    fromEvent = null;
     messagestate = 0;
 }
 
@@ -219,14 +248,72 @@ function endDragMessageVisual(event) {
     }
 }
 
+// Function to handle graphics part of drawing messages
+function drawMessage(line, fromprocess, toprocess, fromx, tox) {
+    const pc = {
+        x: parseFloat(line.getAttributeNS(null, "x2")),
+        y: parseFloat(line.getAttributeNS(null, "y2"))
+    };
+    // The center of arrows is the end point of the line for message
+    const l1 = {
+        p1: {
+            x: parseFloat(line.getAttributeNS(null, "x1")),
+            y: parseFloat(line.getAttributeNS(null, "y1"))
+        },
+        p2: pc
+    };
+    // Line object
+    const toadd = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    toadd.setAttributeNS(null, "class", "message");
+    toadd.dataset.fromprocess = fromprocess;
+    toadd.dataset.toprocess = toprocess;
+    toadd.dataset.fromx = fromx;
+    toadd.dataset.tox = tox;
+    // Setting up graphics group to represet message
+    line.setAttributeNS(null, "class", "");
+    // Drawing line connecting two processes
+    toadd.appendChild(line);
+    // Adding line connecting two timelines to graphics group
+    const parallelLine = lineParallel(l1, pc, 15);
+    // Getting a smaller parallel line centered at second end point
+    const rotateLinePlus = rotateLine(parallelLine, pc, 157.5);
+    const rotateLineMinus = rotateLine(parallelLine, pc, -157.5);
+    // Mathematical description of lines
+    const toadd2 = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    // Generating SVG lines based on mathematical description
+    toadd2.setAttributeNS(null, "points",
+        pc.x.toString() + ',' + pc.y.toString() + ' ' +
+        rotateLinePlus.p2.x.toString() + ',' + rotateLinePlus.p2.y.toString() + ' ' +
+        rotateLineMinus.p2.x.toString() + ',' + rotateLineMinus.p2.y.toString()
+    );
+    toadd2.setAttributeNS(null, "class", "message-arrow");
+    toadd.appendChild(toadd2);
+    // Appending + angle arrow
+    return toadd;
+}
+
 // Creation of message ended in a point inside simspace
 function finishDragMessageVisual(event) {
     if((!ticking) && messagestate === 1) {
         if(event.target.className === "slider-bone" && !(fromMessage === event.target)) {
             messagestate = 3;
-            currentMessage.setAttribute("x2", event.offsetX.toString() + 'px');
-            currentMessage.setAttribute("y2", String(getRelativePosition(event.target, event.currentTarget).y) + 'px');
+            const relpos = getRelativePosition(event.target, event.currentTarget);
+            currentMessage.setAttributeNS(null, "x2", String(relpos.x + event.offsetX) + 'px');
+            currentMessage.setAttributeNS(null, "y2", String(relpos.y) + 'px');
+            const toEvent = createEventVisual(event.target, event.offsetX);
+            // Setting message endpoint for line
+            messagespace.removeChild(currentMessage);
+            // Removing temporary line
+            messagespace.appendChild(
+                drawMessage(currentMessage, fromMessage.dataset.process,
+                event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
+            );
+            // Adding graphics group to show
+            currentMessage = null;
+            fromMessage = null;
+            fromEvent = null;
             messagestate = 0;
+            // Resetting state for next message
         }
         else {
             failedMessageVisual();
@@ -293,8 +380,6 @@ function deleteNode() {
     // Removing invalid events
 }
 
-const addMode = document.getElementById("add"); 
-const subMode = document.getElementById("subtract");
 function updateModes() {
     const setcolor = "#DDFFDD";
     if(addEventsMessage) {
@@ -321,14 +406,69 @@ function inputMode(event) {
     }
 }
 
-simspace.style.width = tellspace.clientWidth.toString() + 'px';
+function windowChange(event) {
+    const vw = Math.min(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100, 10);
+    const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
+    //if (tellspace.clientWidth > mysteryAdjustment(curwidth, vw, max_events_offset)) {
+        simspace.style.width = tellspace.clientWidth.toString() + 'px';
+        console.log(event.target);
+    //}
+    // Try to take up all available screen width
+    simpos = getPosition(simspace);
+    // Getting position of simspace for use everywhere
+    window.requestAnimationFrame(function() {
+        let messageList = Array.from(messagespace.childNodes);
+        // Converting list of nodes in messagespace into an array. Array should have graphical groups
+        const processBones = new Map();
+        for (const child of Array.from(simspace.getElementsByClassName("slider-bone"))) {
+            processBones.set(child.dataset.process, getRelativePosition(child, simspace).y);
+        }
+        console.log(processBones);
+        while(messagespace.firstChild) {
+            messagespace.firstChild.remove();
+        }
+        // Removing nodes
+        for (const child of messageList) {
+            if(isElement(child)) {
+                const grandchild = [...child.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line")];
+                if (grandchild.length === 1) {
+                    const fromprocess = child.dataset.fromprocess;
+                    const toprocess = child.dataset.toprocess;
+                    if (processBones.has(fromprocess) && processBones.has(toprocess)) {
+                        grandchild[0].setAttributeNS(null, "y1", processBones.get(fromprocess).toString() + 'px');
+                        grandchild[0].setAttributeNS(null, "y2", processBones.get(toprocess).toString() + 'px');
+                        messagespace.appendChild(
+                            drawMessage(grandchild[0], fromprocess, toprocess, child.dataset.fromx,child.dataset.tox)
+                        );
+                    }
+                }
+            }
+        }
+        // Redrawing messages
+        ticking = false;
+    });
+    ticking = true;
+}
+
+
+window.addEventListener("load", windowChange);
+window.addEventListener("resize", windowChange);
+// Listening for changing window sizes and loads to update positions and widths of elements
+
 tellspace.addEventListener("scroll", manageTime);
+// Calling function for dynamically resizing element with maximum scrolls
+
 simspace.addEventListener("mousedown", createMessageVisual);
 simspace.addEventListener("mousemove", dragMessageVisual);
 simspace.addEventListener("mouseleave", endDragMessageVisual);
 simspace.addEventListener("mouseup", finishDragMessageVisual);
+// Listening for events leading to creation of a message
+
 document.getElementById("plus").addEventListener("click", createNode);
 document.getElementById("minus").addEventListener("click", deleteNode);
+// adding and deleting nodes on click
+
 addMode.addEventListener("click", inputMode);
 subMode.addEventListener("click", inputMode);
+// Switching between adding and deleting events/messages
 updateModes();
