@@ -16,17 +16,23 @@ inMap is a map of processor-increment values or it can be a scalar value
 */
 // Represents events
 class Event {
+    static counter = 0;
     constructor(time, processor) {
         this.t  = time;
         this.p  = processor;
+        this.id = Event.counter;
+        Event.counter += 1;
     }
 }
 
 // Represents Messages
 class Message {
+    static counter = 0;
     constructor(event1, event2) {
         this.e1 = event1;
         this.e2 = event2;
+        this.id = Message.counter;
+        Message.counter += 1;
     }
     get event1() {
         if (this.e1 instanceof Event) {
@@ -152,7 +158,9 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
             cycleDetect = !eventInIteration;
             // No event has been processed over the last iteration. It means cycle present
             eventInIteration = false;
-        }
+        }    
+    }
+    if(cycleDetect) {
         
     }
     return cycleDetect;

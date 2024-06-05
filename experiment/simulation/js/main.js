@@ -95,9 +95,29 @@ function manageTime(event) {
 // Function for updating times associated with each element
 function updateEventTimes() {
     const cycleDetect = computeScalar(events, messages, ticks, event_time, causal_chain);
-    console.log(event_time);
-    console.log(cycleDetect);
-    console.log(causal_chain);
+    if(!cycleDetect) {
+        console.log(document.getElementsByClassName("event-tip"));
+        let i = events.length - 1;
+        while(i >= 0) {
+            const ID_FORMAT = events[i].p.toString() + '-' + events[i].t.toString() + '-tip';
+            // Format of event tool tip
+            const eventtip = document.getElementById(ID_FORMAT);
+            // Getting tip corresponding to event
+            if(!(eventtip === null)) {
+                while(eventtip.firstChild) {
+                    eventtip.removeChild(eventtip.lastChild);
+                }
+                // Remove all previous text
+                console.log("element");
+                const toadd = document.createTextNode(String(event_time.get(events[i])));
+                eventtip.appendChild(toadd);
+                // Adding new time
+            }
+            i--;
+        }
+        // Modifying DOM which might be observable - request timeout from other events       
+    }
+    return cycleDetect;
 }
 
 function prepareInputbuttons(mytarget, target2, inmin, inmax) {
@@ -145,7 +165,7 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
 }
 
 // Creating an event
-function createEventVisual(target, offsetX) {
+function createEventVisual(target, offsetX, noupdate = false) {
     const toadd = document.createElement("div");
     toadd.className = "event";
     toadd.style.left = String(offsetX - shapeOffset) + "px";
@@ -159,18 +179,39 @@ function createEventVisual(target, offsetX) {
     toadd.dataset.myx = roundedX.toString();
     toadd.dataset.process = target.dataset.process;
     // Saving identifier for use in deletion
+    const ID_FORMAT = toadd.dataset.process.toString() + '-' + toadd.dataset.myx.toString();
+    // Common identifier for detecting clicks 
+    const toadd3 = document.createElement("input");
+    toadd3.type = "checkbox";
+    toadd3.className = "check-label";
+    toadd3.id = ID_FORMAT + 'input';
+    // Creating an invisible checkbox
+    const toadd4 = document.createElement("label");
+    toadd4.className = "check-label";
+    toadd4.htmlFor = ID_FORMAT + 'input';
+    // Create the clickable area
+    const toadd5 = document.createElement("span");
+    toadd5.className = "event-tip";
+    toadd5.id = ID_FORMAT + '-tip';
+    // Creating pop up for displaying times
+    toadd.appendChild(toadd3);
+    toadd.appendChild(toadd4);
+    toadd.appendChild(toadd5);
+    // Adding elements for displaying event time on click
     target.appendChild(toadd);
     // Adding element
     const toadd2 = createEvent(roundedX, parseInt(target.dataset.process));
     events.push(toadd2);
 
     console.log(events);
-    updateEventTimes();
+    if(!noupdate) {
+        updateEventTimes();
+    }
     return [toadd, toadd2];
 }
 
 //Deleting an event
-function deleteEventVisual(target, currentTarget) {
+function deleteEventVisual(target, currentTarget, noupdate) {
     const intx = parseInt(target.dataset.myx);
     let toreturn = null; 
     const rindx = events.map(
@@ -200,7 +241,9 @@ function deleteEventVisual(target, currentTarget) {
     }
     // If the maximum element has just been removed, find a new maximum
     currentTarget.removeChild(target);
-    updateEventTimes();
+    if(!noupdate) {
+        updateEventTimes();
+    }
     return toreturn;
 }
 
@@ -209,7 +252,7 @@ function manageEventVisual(event) {
     if(event.button < 4) {
         // Only when any mouse buttons are pressed
         if (addEventsMessage) {
-            if(!(event.target.className == "event")) {
+            if(event.target.className == "slider-bone") {
                 // We don't want one event on top of another for the sake of clarity
                 createEventVisual(event.target, event.offsetX);
             }
@@ -308,7 +351,7 @@ function createMessageVisual(event) {
             // Making the line visible
             currentMessage = toadd;
             fromMessage = event.target;
-            [fromEvent, fromEventobj] = createEventVisual(event.target, event.offsetX);
+            [fromEvent, fromEventobj] = createEventVisual(event.target, event.offsetX, true);
             messagestate = 1;
         }
         // Signal start of a potential message
@@ -332,7 +375,7 @@ function dragMessageVisual(event) {
 function failedMessageVisual() {
     messagestate = 2;
     messagespace.removeChild(currentMessage);
-    deleteEventVisual(fromEvent, fromMessage);
+    deleteEventVisual(fromEvent, fromMessage, true);
     currentMessage = null;
     fromMessage = null;
     fromEvent = null;
@@ -399,7 +442,7 @@ function finishDragMessageVisual(event) {
             const relpos = getRelativePosition(event.target, event.currentTarget);
             currentMessage.setAttributeNS(null, "x2", String(relpos.x + event.offsetX) + 'px');
             currentMessage.setAttributeNS(null, "y2", String(relpos.y) + 'px');
-            const [toEvent, toEventobj] = createEventVisual(event.target, event.offsetX);
+            const [toEvent, toEventobj] = createEventVisual(event.target, event.offsetX, true);
             toEvent.classList.add('to');
             // Setting message endpoint for line
             fromEvent.classList.add('from');

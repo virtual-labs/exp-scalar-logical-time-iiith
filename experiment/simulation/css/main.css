@@ -194,3 +194,71 @@ input[type=number]
     stroke:#18543c;
     filter: drop-shadow( 1px 1px 2px rgb(226, 255, 243));
 }
+
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+  
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity:1;
+    }
+}
+
+input[type=checkbox].check-label {
+    display: none;
+}
+
+label.check-label {
+    display: inline-block;
+    height: 100%;
+    width: 100%;
+    top: -6px;
+}
+
+.to > label.check-label {
+    top: -12px;
+}
+
+.event-tip {
+    position: absolute;
+    visibility: visible;
+    background-color: #555;
+    text-align: center;
+    padding: 3px 10px;
+    border-radius: 6px;
+    z-index: 4;
+    opacity: 0;
+    bottom: 140%;
+    left: -2.5px;
+    display: flex;
+    justify-content: center;
+    color: rgb(237, 255, 222);
+}
+
+
+.event-tip:after {
+    content: "";
+    position: absolute;
+    top: 92%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+input[type=checkbox].check-label:checked ~ .event-tip {
+    visibility: visible;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+    opacity: 1;
+}
