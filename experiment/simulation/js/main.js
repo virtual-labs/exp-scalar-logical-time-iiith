@@ -45,6 +45,15 @@ const addMode = document.getElementById("add");
 const subMode = document.getElementById("subtract");
 // Buttons for changing between adding and subtracting events
 
+const event_time = new Map();
+// Event time mappings
+
+const ticks = [];
+// Array having ticking for each process
+
+const causal_chain = new Map();
+// Map establishing causal links between elements
+
 // Function is used to determine whether the current width can hold all events. Empirically determined
 function mysteryAdjustment(curwidth, vw, max_events_offset) {
     return curwidth - 13 - 10 * vw >= max_events_offset;
@@ -83,6 +92,14 @@ function manageTime(event) {
     }
 }
 
+// Function for updating times associated with each element
+function updateEventTimes() {
+    const cycleDetect = computeScalar(events, messages, ticks, event_time, causal_chain);
+    console.log(event_time);
+    console.log(cycleDetect);
+    console.log(causal_chain);
+}
+
 function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     const toadd = document.createElement("div");
     toadd.className = "quantity-nav";
@@ -95,6 +112,10 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
         const oldval = parseInt(target2.value);
         if(oldval < inmax) {
             target2.value = String(oldval + 1);
+            ticks[target2.dataset.process] += 1;
+            if(mytarget.getElementsByClassName("event").length > 0) {
+                updateEventTimes();
+            }
         }
     });
     // Creating + button
@@ -106,6 +127,10 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
         const oldval = parseInt(target2.value);
         if(oldval > inmin) {
             target2.value = String(oldval - 1);
+            ticks[target2.dataset.process] -= 1;
+            if(mytarget.getElementsByClassName("event").length > 0) {
+                updateEventTimes();
+            }
         }
     });
     // Creating - button
@@ -136,9 +161,11 @@ function createEventVisual(target, offsetX) {
     // Saving identifier for use in deletion
     target.appendChild(toadd);
     // Adding element
-    const toadd2 = createEvent(roundedX, target.dataset.process);
+    const toadd2 = createEvent(roundedX, parseInt(target.dataset.process));
     events.push(toadd2);
+
     console.log(events);
+    updateEventTimes();
     return [toadd, toadd2];
 }
 
@@ -173,6 +200,7 @@ function deleteEventVisual(target, currentTarget) {
     }
     // If the maximum element has just been removed, find a new maximum
     currentTarget.removeChild(target);
+    updateEventTimes();
     return toreturn;
 }
 
@@ -196,6 +224,7 @@ function manageEventVisual(event) {
                         return item === "from" || item === "to";
                 })
             ) {
+                // Deleting message and the events on from and to processes if either from or to events of the message is deleted
                 const messagelist = messagespace.getElementsByClassName("message");
                 for (const message of messagelist) {
                     if (
@@ -379,11 +408,6 @@ function finishDragMessageVisual(event) {
             // Removing temporary line
             currentMessage.addEventListener("click", deleteMessageVisual);
             // Adding event listener for deletion
-            messagespace.appendChild(
-                drawMessage(currentMessage, fromMessage.dataset.process,
-                event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
-            );
-            // Adding graphics group to show
             messages.push(
                 createMessage(
                     fromEventobj,
@@ -391,7 +415,13 @@ function finishDragMessageVisual(event) {
                 )
             );
             console.log(messages);
+            updateEventTimes();
             // Adding record of message to list of messages
+            messagespace.appendChild(
+                drawMessage(currentMessage, fromMessage.dataset.process,
+                event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
+            );
+            // Adding graphics group to show
             currentMessage = null;
             fromMessage = null;
             fromEvent = null;
@@ -409,17 +439,22 @@ function createNode() {
     
     const inmin = 1;
     const inmax = 5;
+    const indefault = 1;
     
     const toadd = document.createElement("div");
     toadd.className = "slider-container";
     // Creating a container for the node timeline
     
+    const node_len = nodes.length;
+    // The index of this process
+
     const toadd2 = document.createElement("input");
     toadd2.type = "number";
     toadd2.className = "increment";
     toadd2.min = inmin.toString();
     toadd2.max = inmax.toString();
     toadd2.value = inmin.toString();
+    toadd2.dataset.process = node_len;
     // Text boxes for setting increment in time step at each processor
     // Change CSS values for class increment should the max increase beyond some digits
     
@@ -429,7 +464,7 @@ function createNode() {
     
     const toadd4 = document.createElement("div");
     toadd4.className = "slider-bone";
-    toadd4.dataset.process = nodes.length;
+    toadd4.dataset.process = node_len;
     toadd4.addEventListener("click", manageEventVisual);
     toadd3.appendChild(toadd4);
     // Adding straight line representing timeline
@@ -448,10 +483,14 @@ function createNode() {
     
     nodes.push(toadd);
     // Keeping track of the container div
+    
+    ticks.push(indefault);
+    // Adding to array of process ticks
 }
 
 function deleteNode() {
     nodes.pop();
+    ticks.pop();
     if(isElement(simspace.lastElementChild)) {
         simspace.removeChild(simspace.lastElementChild);
     }
