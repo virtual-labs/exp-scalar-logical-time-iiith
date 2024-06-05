@@ -109,8 +109,15 @@ function updateEventTimes() {
                 }
                 // Remove all previous text
                 console.log("element");
-                const toadd = document.createTextNode(String(event_time.get(events[i])));
+                const toadd = document.createTextNode('e');
+                const toadd2 = document.createElement("sub");
+                const toadd3 = document.createTextNode(events[i].id.toString());
+                const toadd4 = document.createTextNode(':' + String(event_time.get(events[i])));
+
+                toadd2.appendChild(toadd3);
                 eventtip.appendChild(toadd);
+                eventtip.appendChild(toadd2);
+                eventtip.appendChild(toadd4);
                 // Adding new time
             }
             i--;
@@ -248,43 +255,40 @@ function deleteEventVisual(target, currentTarget, noupdate) {
 }
 
 // Manages event creation and deletion
-function manageEventVisual(event) {
-    if(event.button < 4) {
-        // Only when any mouse buttons are pressed
-        if (addEventsMessage) {
-            if(event.target.className == "slider-bone") {
-                // We don't want one event on top of another for the sake of clarity
-                createEventVisual(event.target, event.offsetX);
-            }
+function manageEventVisual(target, offsetX) {
+    if (addEventsMessage) {
+        if(target.className == "slider-bone") {
+            // We don't want one event on top of another for the sake of clarity
+            return createEventVisual(target, offsetX);
         }
-        else {
-            if(event.target.className == "event") {
-                deleteEventVisual(event.target, event.currentTarget);
-            }
-            else if (
-                Array.from(event.target.classList).some(
-                    function(item) {
-                        return item === "from" || item === "to";
-                })
-            ) {
-                // Deleting message and the events on from and to processes if either from or to events of the message is deleted
-                const messagelist = messagespace.getElementsByClassName("message");
-                for (const message of messagelist) {
-                    if (
-                            (event.target.dataset.myx === message.dataset.fromx
-                                && 
-                            event.target.dataset.process === message.dataset.fromprocess
-                            ) || 
-                            (event.target.dataset.myx === message.dataset.tox
-                                &&
-                            event.target.dataset.process === message.dataset.toprocess
-                            )
-                    ) {
-                        const linelement = message.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line");
-                        if (linelement.length === 1) {
-                            console.log(linelement);
-                            deleteMessage(linelement[0]);    
-                        }
+    }
+    else {
+        if(target.className == "event") {
+            deleteEventVisual(target, target.parentElement);
+        }
+        else if (
+            Array.from(target.classList).some(
+                function(item) {
+                    return item === "from" || item === "to";
+            })
+        ) {
+            // Deleting message and the events on from and to processes if either from or to events of the message is deleted
+            const messagelist = messagespace.getElementsByClassName("message");
+            for (const message of messagelist) {
+                if (
+                        (target.dataset.myx === message.dataset.fromx
+                            && 
+                        target.dataset.process === message.dataset.fromprocess
+                        ) || 
+                        (target.dataset.myx === message.dataset.tox
+                            &&
+                        target.dataset.process === message.dataset.toprocess
+                        )
+                ) {
+                    const linelement = message.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line");
+                    if (linelement.length === 1) {
+                        console.log(linelement);
+                        deleteMessage(linelement[0]);    
                     }
                 }
             }
@@ -337,24 +341,29 @@ function deleteMessageVisual(event) {
 
 // Creates mesages
 function createMessageVisual(event) {
-    if(addEventsMessage && event.target.className === "slider-bone" && event.button < 4) {
-        if (!(messagestate === 1)) {
-            const toadd = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            toadd.setAttributeNS(null, "class", "message");
-            const relPos = getRelativePosition(event.target, event.currentTarget);
-            toadd.setAttributeNS(null, "x1", String(event.offsetX + relPos.x) + 'px');
-            toadd.setAttributeNS(null, "y1", String(relPos.y) + 'px');
-            toadd.setAttributeNS(null, "x2", String(event.offsetX + relPos.x) + 'px');
-            toadd.setAttributeNS(null, "y2", String(relPos.y) + 'px');
-            // Creating temporary line for guiding message drawing
-            messagespace.appendChild(toadd);
-            // Making the line visible
-            currentMessage = toadd;
-            fromMessage = event.target;
-            [fromEvent, fromEventobj] = createEventVisual(event.target, event.offsetX, true);
-            messagestate = 1;
+    if((!ticking)  && event.button < 4) {
+        if(event.target.className === "slider-bone" && addEventsMessage) {
+            if (!(messagestate === 1)) {
+                const toadd = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                toadd.setAttributeNS(null, "class", "message");
+                const relPos = getRelativePosition(event.target, event.currentTarget);
+                toadd.setAttributeNS(null, "x1", String(event.offsetX + relPos.x) + 'px');
+                toadd.setAttributeNS(null, "y1", String(relPos.y) + 'px');
+                toadd.setAttributeNS(null, "x2", String(event.offsetX + relPos.x) + 'px');
+                toadd.setAttributeNS(null, "y2", String(relPos.y) + 'px');
+                // Creating temporary line for guiding message drawing
+                messagespace.appendChild(toadd);
+                // Making the line visible
+                currentMessage = toadd;
+                fromMessage = event.target;
+                [fromEvent, fromEventobj] = manageEventVisual(event.target, event.offsetX);
+                messagestate = 1;
+            }
+            // Signal start of a potential message
         }
-        // Signal start of a potential message
+        else if ([...event.target.classList].indexOf("event") > -1 && !addEventsMessage) {
+            manageEventVisual(event.target, -1);
+        }
     }
 }
 
@@ -437,42 +446,56 @@ function drawMessage(line, fromprocess, toprocess, fromx, tox) {
 // Creation of message ended in a point inside simspace
 function finishDragMessageVisual(event) {
     if((!ticking) && messagestate === 1) {
-        if(event.target.className === "slider-bone" && !(fromMessage === event.target)) {
-            messagestate = 3;
-            const relpos = getRelativePosition(event.target, event.currentTarget);
-            currentMessage.setAttributeNS(null, "x2", String(relpos.x + event.offsetX) + 'px');
-            currentMessage.setAttributeNS(null, "y2", String(relpos.y) + 'px');
-            const [toEvent, toEventobj] = createEventVisual(event.target, event.offsetX, true);
-            toEvent.classList.add('to');
-            // Setting message endpoint for line
-            fromEvent.classList.add('from');
-            // Setting message startpoint for line
-            messagespace.removeChild(currentMessage);
-            // Removing temporary line
-            currentMessage.addEventListener("click", deleteMessageVisual);
-            // Adding event listener for deletion
-            messages.push(
-                createMessage(
-                    fromEventobj,
-                    toEventobj
-                )
-            );
-            console.log(messages);
-            updateEventTimes();
-            // Adding record of message to list of messages
-            messagespace.appendChild(
-                drawMessage(currentMessage, fromMessage.dataset.process,
-                event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
-            );
-            // Adding graphics group to show
-            currentMessage = null;
-            fromMessage = null;
-            fromEvent = null;
-            fromEventobj = null;
-            messagestate = 0;
-            // Resetting state for next message
+        if(event.target.className === "slider-bone" || event.target.className === "event" || event.target.className === "check-label") {
+            if (fromMessage === event.target || fromMessage.contains(event.target)) {
+                messagespace.removeChild(currentMessage);
+                updateEventTimes();
+                currentMessage = null;
+                fromMessage = null;
+                fromEvent = null;
+                fromEventobj = null;
+                messagestate = 0;
+                // Resetting state for next message
+            }
+            else {
+                messagestate = 3;
+                const relpos = getRelativePosition(event.target, event.currentTarget);
+                currentMessage.setAttributeNS(null, "x2", String(relpos.x + event.offsetX) + 'px');
+                currentMessage.setAttributeNS(null, "y2", String(relpos.y) + 'px');
+                const [toEvent, toEventobj] = createEventVisual(event.target, event.offsetX, true);
+                toEvent.classList.add('to');
+                // Setting message endpoint for line
+                fromEvent.classList.add('from');
+                // Setting message startpoint for line
+                messagespace.removeChild(currentMessage);
+                // Removing temporary line
+                currentMessage.addEventListener("click", deleteMessageVisual);
+                // Adding event listener for deletion
+                messages.push(
+                    createMessage(
+                        fromEventobj,
+                        toEventobj
+                    )
+                );
+                console.log(messages);
+                updateEventTimes();
+                // Adding record of message to list of messages
+                messagespace.appendChild(
+                    drawMessage(currentMessage, fromMessage.dataset.process,
+                    event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
+                );
+                // Adding graphics group to show
+                currentMessage = null;
+                fromMessage = null;
+                fromEvent = null;
+                fromEventobj = null;
+                messagestate = 0;
+                // Resetting state for next message
+            }
         }
         else {
+            console.log('failed!');
+            console.log(event.target);
             failedMessageVisual();
         }
     }
@@ -508,7 +531,7 @@ function createNode() {
     const toadd4 = document.createElement("div");
     toadd4.className = "slider-bone";
     toadd4.dataset.process = node_len;
-    toadd4.addEventListener("click", manageEventVisual);
+    //toadd4.addEventListener("click", manageEventVisual);
     toadd3.appendChild(toadd4);
     // Adding straight line representing timeline
     
@@ -551,10 +574,12 @@ function updateModes() {
     if(addEventsMessage) {
         addMode.style.backgroundColor = setcolor;
         subMode.style.backgroundColor = "";
+        simspace.className = "";
     }
     else {
         addMode.style.backgroundColor = "";
         subMode.style.backgroundColor = setcolor;
+        simspace.className = "delete";
     }
 
 }

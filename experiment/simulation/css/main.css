@@ -224,23 +224,31 @@ label.check-label {
     top: -6px;
 }
 
+.delete label.check-label {
+    display: none;
+}
+
 .to > label.check-label {
     top: -12px;
+}
+
+.to > .event-tip {
+    right: -320%;
+    bottom: 170%;
 }
 
 .event-tip {
     position: absolute;
     visibility: visible;
-    background-color: #555;
+    background-color: #463071;
     text-align: center;
     padding: 3px 10px;
     border-radius: 6px;
     z-index: 4;
     opacity: 0;
     bottom: 140%;
-    left: -2.5px;
-    display: flex;
-    justify-content: center;
+    right: -150%;
+    display: inline;
     color: rgb(237, 255, 222);
 }
 
@@ -253,7 +261,12 @@ label.check-label {
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #555 transparent transparent transparent;
+    border-color: #463071 transparent transparent transparent;
+}
+
+sub {
+    vertical-align: sub;
+    font-size: smaller;
 }
 
 input[type=checkbox].check-label:checked ~ .event-tip {
