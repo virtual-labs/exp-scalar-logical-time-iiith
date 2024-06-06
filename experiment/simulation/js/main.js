@@ -697,6 +697,7 @@ function finishDragMessageVisual(event) {
                         drawMessage(currentMessage, fromMessage.dataset.process,
                         event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
                     );
+                    displayCausalGraph(current_display_p, current_display_t);
                 }
                 // Adding graphics group to show
                 currentMessage = null;
