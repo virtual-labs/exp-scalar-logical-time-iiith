@@ -13,6 +13,8 @@ let simpos = null;
 const messagespace = document.getElementById("messagespace");
 // Used to draw lines between events
 
+const cyclespace = document.getElementById("cyclespace");
+
 const nodes = [];
 // An array of all nodes in the distributed system
 
@@ -297,7 +299,7 @@ function manageEventVisual(target, offsetX) {
 }
 
 // Deletes messages. Accepts the line SVG object connecting the two processes as argument
-function deleteMessage(target) {
+function deleteMessage(target, noupdate = false) {
     const parentElement = target.parentElement;
     if(!(parentElement === null)) {
         const fromprocess = parentElement.dataset.fromprocess;
@@ -309,10 +311,10 @@ function deleteMessage(target) {
         const toevent = [];
         for(const event of eventlist) {
             if (event.dataset.myx === fromx && event.dataset.process === fromprocess) {
-                fromevent.push(deleteEventVisual(event, event.parentElement));
+                fromevent.push(deleteEventVisual(event, event.parentElement, noupdate));
             }
             if(event.dataset.myx === tox && event.dataset.process === toprocess) {
-                toevent.push(deleteEventVisual(event, event.parentElement));
+                toevent.push(deleteEventVisual(event, event.parentElement, noupdate));
             }
         }
         const grandParent = parentElement.parentElement;
@@ -443,6 +445,14 @@ function drawMessage(line, fromprocess, toprocess, fromx, tox) {
     return toadd;
 }
 
+async function showCyclePopup() {
+    cyclespace.className = "";
+    await new Promise(function(res) {
+        setTimeout(res, 5000);
+    });
+    cyclespace.className = "hidden";
+}
+
 // Creation of message ended in a point inside simspace
 function finishDragMessageVisual(event) {
     if((!ticking) && messagestate === 1) {
@@ -477,13 +487,21 @@ function finishDragMessageVisual(event) {
                         toEventobj
                     )
                 );
-                console.log(messages);
-                updateEventTimes();
                 // Adding record of message to list of messages
-                messagespace.appendChild(
-                    drawMessage(currentMessage, fromMessage.dataset.process,
-                    event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
-                );
+                if(updateEventTimes()) {
+                    // Cycle has been detected - undo message
+                    messages.pop();
+                    deleteEventVisual(toEvent, toEvent.parentElement);
+                    deleteEventVisual(fromEvent, fromEvent.parentElement);
+                    showCyclePopup();
+                }
+                else {
+                    messagespace.appendChild(
+                        drawMessage(currentMessage, fromMessage.dataset.process,
+                        event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
+                    );
+                }
+                console.log(messages);
                 // Adding graphics group to show
                 currentMessage = null;
                 fromMessage = null;
@@ -557,16 +575,45 @@ function createNode() {
 function deleteNode() {
     nodes.pop();
     ticks.pop();
+    const node_len = nodes.length;
+    let i = messages.length;
+    // Removing recod of invalid messages
+    while(i-- > 0) {
+        if(
+            parseInt(messages[i].event1.p >= node_len) ||
+            parseInt(messages[i].event2.p >= node_len)
+        ) {
+            messages.splice(i, 1);        
+        }
+    }
+    // Removing GUI of invalid messages
+    const messagelist = messagespace.getElementsByClassName("message");
+    for (const message of messagelist) {
+        if (
+                ( 
+                    parseInt(message.dataset.fromprocess) >= node_len
+                ) || 
+                (
+                    parseInt(message.dataset.toprocess) >= node_len
+                )
+        ) {
+            const linelement = message.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line");
+            if (linelement.length === 1) {
+                deleteMessage(linelement[0], true);    
+            }
+        }
+    }
     if(isElement(simspace.lastElementChild)) {
         simspace.removeChild(simspace.lastElementChild);
     }
-    let i = events.length;
+    // Removing invalid events
+    i = events.length;
     while(i-- > 0) {
-        if(parseInt(events[i].p) >= nodes.length) {
+        if(parseInt(events[i].p) >= node_len) {
             events.splice(i, 1);
         } 
     }
-    // Removing invalid events
+    updateEventTimes();
 }
 
 function updateModes() {
