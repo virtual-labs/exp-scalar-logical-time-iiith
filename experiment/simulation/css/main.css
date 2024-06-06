@@ -168,11 +168,11 @@ input[type=number]
 }
 
 .event:hover {
-    box-shadow: 0 0 6px rgba(35, 173, 278, 1);
+    box-shadow: 0 0 6px rgba(35, 173, 255, 1);
 }
 
 .delete .event:hover {
-    box-shadow: 0 0 6px rgba(278, 173, 35, 1);
+    box-shadow: 0 0 6px rgba(255, 173, 35, 1);
 }
 
 #messagespace {
@@ -316,4 +316,46 @@ input[type=checkbox].check-label:checked ~ .event-tip {
     display: flex;
     justify-content: center;
     text-align: center;
+}
+
+#displayspace {
+    border: 3px inset #0f4b33;
+    width: 90vw;
+    height: 30vh;
+    margin: auto;
+    background-color: #17744f;
+    overflow:scroll;
+}
+
+#causalspace {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#causalspace rect {
+    position: absolute;
+    z-index: 0;
+    width: 200%;
+    height: 200%;
+}
+
+#causalgroup circle {
+    fill: rgb(199, 76, 5);
+    z-index: 2;
+}
+
+#causalgroup text {
+    fill: rgb(48, 17, 119);
+    font-size: medium;
+}
+
+#causalgroup .subscript {
+    font-size: smaller;
+}
+
+#causalgroup line {
+    stroke: rgb(248, 231, 119);
+    stroke-width: 3px;
+    z-index: 1;
 }

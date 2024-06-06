@@ -14,6 +14,16 @@ const messagespace = document.getElementById("messagespace");
 // Used to draw lines between events
 
 const cyclespace = document.getElementById("cyclespace");
+// Used for popup to ell used that a cycle has been found
+
+const causalgroup = document.getElementById("causalgroup");
+// Used for displaying causal link of events
+
+const causalspace = document.getElementById("causalspace");
+// SVG element on which causal chains are drawn
+
+const displayspace = document.getElementById("displayspace");
+// Container for SVG
 
 const nodes = [];
 // An array of all nodes in the distributed system
@@ -55,6 +65,9 @@ const ticks = [];
 
 const causal_chain = new Map();
 // Map establishing causal links between elements
+
+let current_display_p = -1;
+let current_display_t = -1;
 
 // Function is used to determine whether the current width can hold all events. Empirically determined
 function mysteryAdjustment(curwidth, vw, max_events_offset) {
@@ -129,6 +142,186 @@ function updateEventTimes() {
     return cycleDetect;
 }
 
+// Helper function for drawing lines with arrows in displayspace
+function createArrowLine (event1, event2, startx, starty, gridx, gridy, used_processes, radius) {
+    const event1x = startx + (event_time.get(event1) - 1) * gridx;
+    const event1y = starty + used_processes.get(event1.p) * gridy;
+    const event2x = startx + (event_time.get(event2) - 1) * gridx;
+    const event2y = starty + used_processes.get(event2.p) * gridy;
+    const toadd = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    // Graphics group for arrow
+    const p1 = {
+        x: event1x,
+        y: event1y
+    };
+    const p2 = {
+        x: event2x,
+        y: event2y
+    };
+    const l1 = {
+        p1: p1,
+        p2: p2
+    };
+    const l6 = lineParallel(l1, p1, radius);
+    const l7 = lineParallel(l1, p2, -radius-20);
+    const toadd2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    toadd2.setAttributeNS(null, "x1", l6.p2.x);
+    toadd2.setAttributeNS(null, "y1", l6.p2.y);
+    toadd2.setAttributeNS(null, "x2", l7.p2.x);
+    toadd2.setAttributeNS(null, "y2", l7.p2.y);
+    // Drawing line from event1 to event2
+    const l2 = lineParallel(l1, l7.p2, 10);
+    const l3 = rotateLine(l2, l7.p2, 270);
+    const l4 = rotateLine(l2, l7.p2, -270);
+    const l5 = lineParallel(l1, l7.p2, 20);
+    const point_to_string = function(p1) {
+        return p1.x.toString() + ',' + p1.y.toString();
+    }
+    const toadd3 = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    toadd3.setAttributeNS(
+        null, "points", 
+        point_to_string(l3.p2) + ' ' +
+        point_to_string(l4.p2) + ' ' +
+        point_to_string(l5.p2)
+    );
+    toadd.appendChild(toadd2);
+    toadd.appendChild(toadd3);
+    return toadd;
+}
+
+//Function for drawing causal tree
+function displayCausalGraph(process = -1, time = -1) {
+    while(causalgroup.firstChild) {
+        causalgroup.removeChild(causalgroup.lastChild);
+        // Clearing causal display
+    }
+    
+    console.log(process);
+    console.log(time);
+    console.log(causal_chain);
+    if(process >= 0 && time >= 0) {
+        let i = events.length;
+        let start_event = null;
+        const lastStack = [];
+        // Used as a stack to get events with lower times first
+        const processQ = [];
+        // Used to build up graph with a queue
+        const used_processes = new Map();
+        // Processes that are in the history of this event
+        while(i-- > 0) {
+            if(
+                events[i].t === time &&
+                events[i].p === process
+            ) {
+                start_event = events[i];
+            }
+        }
+        if(!(start_event === null)) {
+            processQ.push(start_event);
+            // Pushing starting event into queue
+            while(processQ.length > 0) {
+
+                start_event = processQ.shift();
+                if(causal_chain.has(start_event)) {
+                    lastStack.push(start_event);
+                    if(!used_processes.has(start_event.p)) {
+                        used_processes.set(start_event.p, used_processes.size);
+                    }
+                    start_event = causal_chain.get(start_event);
+                    if (start_event === null) {
+                        // Root event
+
+                    }
+                    else if(start_event instanceof Array) {
+                        // Multiple parents for event
+                        i = start_event.length;
+                        while(i-- > 0) {
+                            processQ.push(start_event[i]);
+                        }
+                    }
+                    else {
+                        // Only one parent
+                        processQ.push(start_event);
+                    }
+                }
+            }
+        }
+        const startx = 40;
+        const starty = 40;
+        const gridx  = 250;
+        const gridy  = 100;
+        const radius = 25;
+        let maxx = displayspace.clientWidth + displayspace.scrollWidth;
+        let maxy = displayspace.clientHeight + displayspace.scrollHeight;
+        console.log(processQ);
+        console.log(lastStack);       
+        while(lastStack.length > 0) {
+            start_event = lastStack.pop();
+            // Getting element
+            const myx = startx + (event_time.get(start_event) - 1) * gridx;
+            const myy = starty + used_processes.get(start_event.p) * gridy;
+            // Getting position on svg
+            if(myx > maxx) {
+                maxx = myx;
+            }
+            if(myy > maxy) {
+                maxy = myy;
+            }
+            // Getting extent of SVG
+            const toadd = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            toadd.setAttributeNS(null, "cx", myx);
+            toadd.setAttributeNS(null, "cy", myy);
+            toadd.setAttributeNS(null, "r", radius);
+            // Drawing circle representing event
+            const toadd2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            toadd2.setAttributeNS(null, "x", myx - 7.5);
+            toadd2.setAttributeNS(null, "y", myy + 5);
+            const toadd3 = document.createTextNode("e");
+            toadd2.appendChild(toadd3);
+            // Writing e in circle
+            const toadd4 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            toadd4.setAttributeNS(null, "x", myx + 2.5);
+            toadd4.setAttributeNS(null, "y", myy + 10);
+            toadd4.setAttributeNS(null, "class", "subscript");
+            const toadd5 = document.createTextNode(start_event.id.toString());
+            toadd4.appendChild(toadd5);
+            // Adding subscript event ID
+            causalgroup.appendChild(toadd);
+            causalgroup.appendChild(toadd2);
+            causalgroup.appendChild(toadd4);
+            // Adding graphical elements
+            const end_event = causal_chain.get(start_event);
+            if (end_event instanceof Array) {
+                i = end_event.length;
+                while(i-- > 0) {
+                    if(end_event[i] !== null) {
+                        causalgroup.appendChild(
+                            createArrowLine(end_event[i], start_event, startx, starty, gridx, gridy, used_processes, radius)
+                        );
+                    }
+                }
+            }
+            else {
+                if(end_event!== null) {
+                    causalgroup.appendChild(
+                        createArrowLine(end_event, start_event, startx, starty, gridx, gridy, used_processes, radius)
+                    );
+                }
+            }
+        }
+        causalspace.style.width = String(maxx + radius + 20) + 'px';
+        causalspace.style.height = String(maxy + radius + 20) + 'px';
+        current_display_p = process;
+        current_display_t = time;
+    }
+    else {
+        causalspace.style.width = displayspace.clientWidth + displayspace.scrollWidth;
+        causalspace.style.height = displayspace.clientHeight + displayspace.scrollHeight;
+        current_display_p = -1;
+        current_display_t = -1;
+    }
+}
+
 function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     const toadd = document.createElement("div");
     toadd.className = "quantity-nav";
@@ -194,6 +387,14 @@ function createEventVisual(target, offsetX, noupdate = false) {
     toadd3.type = "checkbox";
     toadd3.className = "check-label";
     toadd3.id = ID_FORMAT + 'input';
+    toadd3.addEventListener("change", 
+        function(event) {
+            displayCausalGraph(
+                parseInt(toadd.dataset.process),
+                roundedX
+            );
+        }
+    );
     // Creating an invisible checkbox
     const toadd4 = document.createElement("label");
     toadd4.className = "check-label";
@@ -215,6 +416,7 @@ function createEventVisual(target, offsetX, noupdate = false) {
     console.log(events);
     if(!noupdate) {
         updateEventTimes();
+        displayCausalGraph(current_display_p, current_display_t);
     }
     return [toadd, toadd2];
 }
@@ -222,6 +424,7 @@ function createEventVisual(target, offsetX, noupdate = false) {
 //Deleting an event
 function deleteEventVisual(target, currentTarget, noupdate) {
     const intx = parseInt(target.dataset.myx);
+    const pintx = parseInt(target.dataset.process);
     let toreturn = null; 
     const rindx = events.map(
         function(e) {
@@ -252,6 +455,12 @@ function deleteEventVisual(target, currentTarget, noupdate) {
     currentTarget.removeChild(target);
     if(!noupdate) {
         updateEventTimes();
+        if(intx === current_display_t && pintx === current_display_p) {
+            displayCausalGraph();
+        }
+        else {
+            displayCausalGraph(current_display_p, current_display_t);
+        }
     }
     return toreturn;
 }
@@ -614,6 +823,7 @@ function deleteNode() {
         } 
     }
     updateEventTimes();
+    displayCausalGraph();
 }
 
 function updateModes() {
@@ -681,6 +891,8 @@ function windowChange(event) {
             }
         }
         // Redrawing messages
+        displayCausalGraph(current_display_p, current_display_t);
+        // Resizing causalspace
         ticking = false;
     });
     ticking = true;
