@@ -111,7 +111,6 @@ function manageTime(event) {
 function updateEventTimes() {
     const cycleDetect = computeScalar(events, messages, ticks, event_time, causal_chain);
     if(!cycleDetect) {
-        console.log(document.getElementsByClassName("event-tip"));
         let i = events.length - 1;
         while(i >= 0) {
             const ID_FORMAT = events[i].p.toString() + '-' + events[i].t.toString() + '-tip';
@@ -123,7 +122,6 @@ function updateEventTimes() {
                     eventtip.removeChild(eventtip.lastChild);
                 }
                 // Remove all previous text
-                console.log("element");
                 const toadd = document.createTextNode('e');
                 const toadd2 = document.createElement("sub");
                 const toadd3 = document.createTextNode(events[i].id.toString());
@@ -196,9 +194,6 @@ function displayCausalGraph(process = -1, time = -1) {
         // Clearing causal display
     }
     
-    console.log(process);
-    console.log(time);
-    console.log(causal_chain);
     if(process >= 0 && time >= 0) {
         let i = events.length;
         let start_event = null;
@@ -252,9 +247,7 @@ function displayCausalGraph(process = -1, time = -1) {
         const gridy  = 100;
         const radius = 25;
         let maxx = displayspace.clientWidth + displayspace.scrollWidth;
-        let maxy = displayspace.clientHeight + displayspace.scrollHeight;
-        console.log(processQ);
-        console.log(lastStack);       
+        let maxy = displayspace.clientHeight + displayspace.scrollHeight;      
         while(lastStack.length > 0) {
             start_event = lastStack.pop();
             // Getting element
@@ -413,7 +406,6 @@ function createEventVisual(target, offsetX, noupdate = false) {
     const toadd2 = createEvent(roundedX, parseInt(target.dataset.process));
     events.push(toadd2);
 
-    console.log(events);
     if(!noupdate) {
         updateEventTimes();
         displayCausalGraph(current_display_p, current_display_t);
@@ -437,7 +429,6 @@ function deleteEventVisual(target, currentTarget, noupdate) {
         events.splice(rindx, 1);
     }
     // Removing element based on target
-    console.log(events);
     if(intx === max_events_offset) {
         if (events.length >= 1) {
             max_events_offset = Math.max.apply(null, events.map(
@@ -449,7 +440,6 @@ function deleteEventVisual(target, currentTarget, noupdate) {
         else {
             max_events_offset = 0;
         }
-        console.log(max_events_offset);
     }
     // If the maximum element has just been removed, find a new maximum
     currentTarget.removeChild(target);
@@ -498,7 +488,6 @@ function manageEventVisual(target, offsetX) {
                 ) {
                     const linelement = message.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line");
                     if (linelement.length === 1) {
-                        console.log(linelement);
                         deleteMessage(linelement[0]);    
                     }
                 }
@@ -539,7 +528,6 @@ function deleteMessage(target, noupdate = false) {
                     messages.splice(i, 1);
                 }
         }
-        console.log(messages);
     }
 }
 
@@ -710,7 +698,6 @@ function finishDragMessageVisual(event) {
                         event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
                     );
                 }
-                console.log(messages);
                 // Adding graphics group to show
                 currentMessage = null;
                 fromMessage = null;
@@ -721,8 +708,6 @@ function finishDragMessageVisual(event) {
             }
         }
         else {
-            console.log('failed!');
-            console.log(event.target);
             failedMessageVisual();
         }
     }

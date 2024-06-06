@@ -60,14 +60,6 @@ class Message {
     }
 }
 
-// Convenience object for having time, event | message 
-class Tag {
-    constructor(time, aobj) {
-        this.t  = time;
-        this.o  = aobj;
-    }
-}
-
 export function computeScalar(inEvents, inMessages, inTicks, result, causalChain) {
     result.clear();
     // Removing previous mappings
@@ -108,7 +100,6 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
     i = eindx.length - 1;
     while( i > -1 && !cycleDetect) {
         const currentEvent = inEvents[eindx[i]];
-        console.log(currentEvent);
         if (is_stopped[currentEvent.p] < 0 || messageQ.has(currentEvent)) {
             if (is_stopped[currentEvent.p] < 0) {
                 processes[currentEvent.p] += inTicks[currentEvent.p];        
@@ -150,7 +141,6 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
                 // Normal event - tick along
                 eventInIteration = true;
                 // An event has been processed over this pass over events
-                console.log(eindx);
             }
         }
         if(--i < 0) {
@@ -159,9 +149,6 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
             // No event has been processed over the last iteration. It means cycle present
             eventInIteration = false;
         }    
-    }
-    if(cycleDetect) {
-        
     }
     return cycleDetect;
 }
