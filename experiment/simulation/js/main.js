@@ -25,6 +25,9 @@ const causalspace = document.getElementById("causalspace");
 const displayspace = document.getElementById("displayspace");
 // Container for SVG
 
+const pinboard = document.getElementById("pinboard");
+// Background
+
 const nodes = [];
 // An array of all nodes in the distributed system
 
@@ -304,12 +307,16 @@ function displayCausalGraph(process = -1, time = -1) {
         }
         causalspace.style.width = String(maxx + radius + 20) + 'px';
         causalspace.style.height = String(maxy + radius + 20) + 'px';
+        pinboard.style.width = String(maxx + radius + 20) + 'px';
+        pinboard.style.height = String(maxy + radius + 20) + 'px';
         current_display_p = process;
         current_display_t = time;
     }
     else {
         causalspace.style.width = displayspace.clientWidth + displayspace.scrollWidth;
         causalspace.style.height = displayspace.clientHeight + displayspace.scrollHeight;
+        pinboard.style.width = displayspace.clientWidth + displayspace.scrollWidth;
+        pinboard.style.height = displayspace.clientHeight + displayspace.scrollHeight;
         current_display_p = -1;
         current_display_t = -1;
     }
@@ -843,6 +850,7 @@ function inputMode(event) {
 function windowChange(event) {
     const vw = Math.min(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100, 10);
     const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
+    displayCausalGraph(current_display_p, current_display_t);
     if (tellspace.clientWidth > mysteryAdjustment(curwidth, vw, max_events_offset)) {
         simspace.style.width = tellspace.clientWidth.toString() + 'px';
     }
