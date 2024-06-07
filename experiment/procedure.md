@@ -43,3 +43,6 @@
 
 2. Scalar time
     - Working of the scalar logical clock can be learned by adjusting events and messages.
+
+3. Concurrency
+    - The circumstances leading to cases where a causal relationship cannot be established between two events.
