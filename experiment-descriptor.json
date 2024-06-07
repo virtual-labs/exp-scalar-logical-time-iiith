@@ -2,14 +2,12 @@
   "unit-type": "lu",
   "label": "",
   "basedir": ".",
-  "LaTeXinMD": false,
+  "LaTeXinMD": true,
   "units": [
     {
-      "unit-type": "aim",
-      "target": "index.html",
       "source": "aim.md",
       "label": "Aim",
-      "unit-type": "task",
+      "unit-type": "aim",
       "content-type": "text"
     },
 
@@ -40,7 +38,7 @@
     {
       "target": "simulation.html",
       "source": "simulation/index.html",
-      "label": "Working of scalar logical clock",
+      "label": "Simulation of scalar logical clock",
       "unit-type": "task",
       "content-type": "simulation"
     },
