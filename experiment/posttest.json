@@ -2,37 +2,33 @@
   "version": 2.0,
   "questions": [
     {
-      "question": "This is a Sample Question 1?",
+      "question": "<img src='./images/consistency.png'> <p>Here, the state of the distributed system is </p>",
       "answers": {
-        "a": "answer1",
-        "b": "answer2",
-        "c": "answer3",
-        "d": "answer4"
+        "a": "Consistent",
+        "b": "Inconsistent"
       },
       "explanations": {
-        "a": "Explanation 1  <a href='www.google.com'>here</a>",
-        "b": "Explanation 2",
-        "c": "Explanation 2",
-        "d": "Explanation 2"
+        "a": "<img src='./images/consistency_explanation.png'>. The deadlocks are shown in this image",
+        "b": "<img src='./images/consistency_explanation.png'>. The deadlocks should be the ones found in the image"
       },
-      "correctAnswer": "a",
+      "correctAnswer": "b",
       "difficulty": "beginner"
     },
     {
-      "question": "This is a Sample Question 2?",
+      "question": "<img src='./images/scalar_concurrent.png'> <p>Determine the times of the last events in the first and last process, assuming the first two processes have a clock increment of 1 and the last two processes have a clock increment of 2, and also whether they are concurrent </p>",
       "answers": {
-        "a": "answer1",
-        "b": "answer2",
-        "c": "answer3",
-        "d": "answer4"
+        "a": "3, 16, not concurrent",
+        "b": "3, 16, concurrent",
+        "c": "3, 10, not concurrent",
+        "d": "3, 10, concurrent"
       },
       "explanations": {
-        "a": "Explanation 1  <a href='www.google.com'>here</a>",
-        "b": "Explanation 2",
-        "c": "Explanation 2",
-        "d": "Explanation 2"
+        "a": "The event at the end of process 1 and the event at the end of process 4 do not eappear in each other's causality chains",
+        "b": "The event at the end of process 1 and the event at the end of process 4 do not eappear in each other's causality chains",
+        "c": "The clock increment for the bottom two processes is 2. Also, the event at the end of process 1 and the event at the end of process 4 do not appear in each other's causality chains",
+        "d": "The clock increment for the bottom two processes is 2"
       },
-      "correctAnswer": "c",
+      "correctAnswer": "b",
       "difficulty": "beginner"
     }
   ]
