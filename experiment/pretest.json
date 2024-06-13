@@ -10,10 +10,10 @@
         "d": "Can be used along with arbitrary tiebreaks to establish partial ordering"
       },
       "explanations": {
-        "a": "It is possible for two events to have no causal connection to the other.",
-        "b": "It is possible for concurrent events to be ordered by another metric to establish total order",
-        "c": "While a total ordering is possible, this does not imply causal relationhip",
-        "d": "It is possible to get a partial ordering with just a scalar logical clock"
+        "a": "Incorrect. It is possible for two events to have no causal connection to the other.",
+        "b": "Incorrect. It is possible for concurrent events to be ordered by another metric to establish total order",
+        "c": "Correct. While a total ordering is possible, this does not imply causal relationhip",
+        "d": "Incorrect. It is possible to get a partial ordering with just a scalar logical clock"
       },
       "correctAnswer": "c",
       "difficulty": "beginner"
@@ -27,10 +27,10 @@
         "d": "increments its clock before the send event and sends a message with the time after the increment"
       },
       "explanations": {
-        "a": "Messages are always sent with the current logical time at a process",
-        "b": "Logical clocks are incremented before the event and the message carry the current logical time at the process",
-        "c": "Logical clocks are incremented before the event",
-        "d": "Logical clocks are incremented before the event and the message carry this incremented time."
+        "a": "Incorrect. Messages are always sent with the current logical time at a process",
+        "b": "Incorrect. Logical clocks are incremented before the event and the message carry the current logical time at the process",
+        "c": "Incorrect. Logical clocks are incremented before the event",
+        "d": "Correct. Logical clocks are incremented before the event and the message carry this incremented time."
       },
       "correctAnswer": "d",
       "difficulty": "beginner"
