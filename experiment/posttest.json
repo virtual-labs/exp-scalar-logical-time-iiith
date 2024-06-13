@@ -17,10 +17,10 @@
     {
       "question": "<img src='./images/scalar_concurrent_label.png'> <p>Determine the times of the events A and B, assuming the processes 1 and 2 have a clock increment of 1 and processes 3 and 4 have a clock increment of 2, and also whether they are concurrent </p>",
       "answers": {
-        "a": "3, 16, not concurrent",
-        "b": "3, 16, concurrent",
-        "c": "3, 10, not concurrent",
-        "d": "3, 10, concurrent"
+        "a": "3, 18, not concurrent",
+        "b": "3, 18, concurrent",
+        "c": "3, 13, not concurrent",
+        "d": "3, 13, concurrent"
       },
       "explanations": {
         "a": "Incorrect. The events A and B do not eappear in each other's causality chains",
