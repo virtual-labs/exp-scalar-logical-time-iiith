@@ -34,7 +34,7 @@
 8. See event times
     - The scalar logical time of an event can be seen by clicking on the event while in add mode.
     - This shows a popup, displaying event ID and time.
-    - The causal relations leading up to that event are displayed below.
+    - The causal relations leading up to that event are displayed below in the green box. Scroll if needed to look at all the events in a causal chain.
 
 ### Observations
 
