@@ -113,7 +113,10 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
             }
             else if(shouldWait.has(currentEvent)) {
                 if(messageQ.has(currentEvent) && (is_stopped[currentEvent.p] < 0 || is_stopped[currentEvent.p] === eindx[i])) {
-                    processes[currentEvent.p] = Math.max(processes[currentEvent.p], messageQ.get(currentEvent));
+                    processes[currentEvent.p] = Math.max(
+                        processes[currentEvent.p] - inTicks[currentEvent.p], 
+                        messageQ.get(currentEvent)
+                    ) + inTicks[currentEvent.p];
                     // Message has been received and time updated
                     causalChain.set(inEvents[eindx[i]], [last_event[currentEvent.p], shouldWait.get(currentEvent)]);
                     // Causal links between events in case of messages
