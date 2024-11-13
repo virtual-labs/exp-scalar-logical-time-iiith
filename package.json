@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@virtual-labs/buildexp": "^1.0.5"
+    "@virtual-labs/buildexp": "^2.1.0"
   }
 }

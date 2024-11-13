@@ -28,11 +28,30 @@ const displayspace = document.getElementById("displayspace");
 const pinboard = document.getElementById("pinboard");
 // Background
 
+const modechange = document.getElementById("mode");
+// Changing modes
+
+const checkanswers = document.getElementById("check");
+// Checking answers on click
+
+const checkanswerswrap = document.getElementById("wrapper");
+// Wraps around button for display purposes
+
+const displaywrap = document.getElementById("wrapper2");
+// Wraps around displayspacw
+
 const nodes = [];
 // An array of all nodes in the distributed system
 
 const events = [];
 // Array of all events
+
+const wrappers = [checkanswerswrap, displaywrap];
+
+let mode = 0;
+/* Modes - 0 - Simulate
+         - 1 - Test
+*/
 
 let max_events_offset = 0;
 // Local Co-ordinates in simspace  of the rightmost event
@@ -847,6 +866,37 @@ function inputMode(event) {
     }
 }
 
+function useMode(wrappingforanswers) {
+    return function(event) {
+        let newtext = null;
+        console.log(mode);
+        for (let ele of wrappingforanswers) {
+            console.log(ele);
+            ele.classList.toggle("hidden");
+        }
+        if(mode === 1) {
+            newtext = document.createTextNode("Test!");
+            windowChange();
+            mode = 0;
+        }
+        else if (mode === 0) {
+            newtext = document.createTextNode("Simulate");
+            mode = 1;
+        }
+        else {
+            newtext = document.createTextNode("Test!");
+            for(let ele of wrappingforanswers) {
+                ele.classList.remove("hidden");
+            }
+            mode = 0;
+        }
+        while(event.target.firstChild) {
+            event.target.removeChild(event.target.lastChild);
+        }
+        event.target.appendChild(newtext);
+    };
+}
+
 function windowChange(event) {
     const vw = Math.min(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100, 10);
     const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
@@ -913,4 +963,7 @@ document.getElementById("minus").addEventListener("click", deleteNode);
 addMode.addEventListener("click", inputMode);
 subMode.addEventListener("click", inputMode);
 // Switching between adding and deleting events/messages
+
+modechange.addEventListener("click", useMode(wrappers));
+// Switching between test mode and simulate mode
 updateModes();
