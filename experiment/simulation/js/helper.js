@@ -80,3 +80,33 @@ function rotatePoint(p1, pc, angle) {
       y: (p1.x - pc.x) * Math.sin(degangle) + (p1.y - pc.y) * Math.cos(degangle) + pc.y
     };
 }
+
+export function setInputFilter(textbox, inputFilter) {
+  [
+    "input",
+    "keydown",
+    "keyup",
+    "mousedown",
+    "mouseup",
+    "select",
+    "contextmenu",
+    "drop",
+  ].forEach(function (event) {
+      textbox.addEventListener(event, function () {
+          if (inputFilter(this.value)) {
+              this.oldValue = this.value
+              this.oldSelectionStart = this.selectionStart
+              this.oldSelectionEnd = this.selectionEnd
+          } 
+          else if (this.hasOwnProperty("oldValue")) {
+              this.value = this.oldValue
+              if(this.oldSelectionEnd !== null && this.oldSelectionEnd !== null) {
+                  this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd)
+              }
+          } 
+          else {
+              this.value = ""
+          }
+      })
+  })
+}

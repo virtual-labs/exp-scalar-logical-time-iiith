@@ -15,7 +15,7 @@ inArray is an array of events
 inMap is a map of processor-increment values or it can be a scalar value
 */
 // Represents events
-class Event {
+export class Event {
     static counter = 0;
     constructor(time, processor) {
         this.t  = time;
@@ -26,7 +26,7 @@ class Event {
 }
 
 // Represents Messages
-class Message {
+export class Message {
     static counter = 0;
     constructor(event1, event2) {
         this.e1 = event1;

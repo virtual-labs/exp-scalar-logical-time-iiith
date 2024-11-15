@@ -1,7 +1,7 @@
 "use strict";
 
 import { computeScalar, createEvent, createMessage } from "./simulation.js";
-import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel } from "./helper.js";
+import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel, setInputFilter } from "./helper.js";
 
 const tellspace = document.getElementById("tellspace");
 // Area of work
@@ -52,6 +52,15 @@ let mode = 0;
 /* Modes - 0 - Simulate
          - 1 - Test
 */
+
+let test_progress = 0;
+/* Progress -   0 - Easy
+                1 - Medium
+                2 - Hard
+*/
+
+let test_lock = false;
+// Prevents simulation until released
 
 let max_events_offset = 0;
 // Local Co-ordinates in simspace  of the rightmost event
@@ -375,6 +384,11 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
         }
     });
     // Creating - button
+    setInputFilter(target2, function(value) {
+        return /^\d*$/.test(value) && (value === "" || (
+        parseInt(value) <= inmax &&
+        parseInt(value) >= inmin))
+    });
     
     toadd.appendChild(toadd2);
     toadd.appendChild(toadd3);
@@ -793,49 +807,63 @@ function createNode() {
     // Adding to array of process ticks
 }
 
-function deleteNode() {
-    nodes.pop();
-    ticks.pop();
-    const node_len = nodes.length;
-    let i = messages.length;
-    // Removing recod of invalid messages
-    while(i-- > 0) {
-        if(
-            parseInt(messages[i].event1.p >= node_len) ||
-            parseInt(messages[i].event2.p >= node_len)
-        ) {
-            messages.splice(i, 1);        
-        }
-    }
-    // Removing GUI of invalid messages
-    const messagelist = messagespace.getElementsByClassName("message");
-    for (const message of messagelist) {
-        if (
-                ( 
-                    parseInt(message.dataset.fromprocess) >= node_len
-                ) || 
-                (
-                    parseInt(message.dataset.toprocess) >= node_len
-                )
-        ) {
-            const linelement = message.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line");
-            if (linelement.length === 1) {
-                deleteMessage(linelement[0], true);    
+function deleteNode(changeMode) {
+    return function(event) {
+        nodes.pop();
+        ticks.pop();
+        const node_len = nodes.length;
+        let i = messages.length;
+        // Removing recod of invalid messages
+        while(i-- > 0) {
+            if(
+                parseInt(messages[i].event1.p >= node_len) ||
+                parseInt(messages[i].event2.p >= node_len)
+            ) {
+                messages.splice(i, 1);        
             }
         }
+        // Removing GUI of invalid messages
+        const messagelist = messagespace.getElementsByClassName("message");
+        for (const message of messagelist) {
+            if (
+                    ( 
+                        parseInt(message.dataset.fromprocess) >= node_len
+                    ) || 
+                    (
+                        parseInt(message.dataset.toprocess) >= node_len
+                    )
+            ) {
+                const linelement = message.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line");
+                if (linelement.length === 1) {
+                    deleteMessage(linelement[0], true);    
+                }
+            }
+        }
+        if(isElement(simspace.lastElementChild)) {
+            simspace.removeChild(simspace.lastElementChild);
+        }
+        // Removing invalid events
+        i = events.length;
+        while(i-- > 0) {
+            if(parseInt(events[i].p) >= node_len) {
+                events.splice(i, 1);
+            } 
+        }
+        if(!changeMode) {
+            updateEventTimes();
+            displayCausalGraph();
+        }
     }
-    if(isElement(simspace.lastElementChild)) {
-        simspace.removeChild(simspace.lastElementChild);
-    }
-    // Removing invalid events
-    i = events.length;
+}
+
+const deleteNodeMinus = deleteNode(false);
+const deleteNodeMode = deleteNode(true);
+
+function deleteAllNodes() {
+    let i = nodes.length;
     while(i-- > 0) {
-        if(parseInt(events[i].p) >= node_len) {
-            events.splice(i, 1);
-        } 
+        deleteNodeMode();
     }
-    updateEventTimes();
-    displayCausalGraph();
 }
 
 function updateModes() {
@@ -876,11 +904,39 @@ function useMode(wrappingforanswers) {
         }
         if(mode === 1) {
             newtext = document.createTextNode("Test!");
+            window.addEventListener("load", windowChange);
+            window.addEventListener("resize", windowChange);
+
+            simspace.addEventListener("mousedown", createMessageVisual);
+            simspace.addEventListener("mousemove", dragMessageVisual);
+            simspace.addEventListener("mouseleave", endDragMessageVisual);
+            simspace.addEventListener("mouseup", finishDragMessageVisual);
+
+            document.getElementById("plus").addEventListener("click", createNode);
+            document.getElementById("minus").addEventListener("click", deleteNodeMinus);
+
+            addMode.addEventListener("click", inputMode);
+            subMode.addEventListener("click", inputMode);
+            deleteAllNodes();
             windowChange();
             mode = 0;
         }
         else if (mode === 0) {
+            window.removeEventListener("load", windowChange);
+            window.removeEventListener("resize", windowChange);
+
+            simspace.removeEventListener("mousedown", createMessageVisual);
+            simspace.removeEventListener("mousemove", dragMessageVisual);
+            simspace.removeEventListener("mouseleave", endDragMessageVisual);
+            simspace.removeEventListener("mouseup", finishDragMessageVisual);
+
+            document.getElementById("plus").removeEventListener("click", createNode);
+            document.getElementById("minus").removeEventListener("click", deleteNodeMinus);
+
+            addMode.removeEventListener("click", inputMode);
+            subMode.removeEventListener("click", inputMode);
             newtext = document.createTextNode("Simulate");
+            deleteAllNodes();
             mode = 1;
         }
         else {
@@ -895,6 +951,33 @@ function useMode(wrappingforanswers) {
         }
         event.target.appendChild(newtext);
     };
+}
+
+function prepareGeneratorInput(elements) {
+    for (const el of elements) {
+        const inputbox = el.querySelector("input[type=number].input-number");
+        setInputFilter(inputbox, function(value) {
+            return /^\d*$/.test(value) &&
+            parseInt(value) <= parseInt(inputbox.max) &&
+            parseInt(value) >= parseInt(inputbox.min)
+        });
+        const decrement = el.querySelector("span.input-number-decrement");
+        decrement.addEventListener('click', function(event) {
+            const oldval = parseInt(inputbox.value);
+            const min = parseInt(inputbox.min);
+            if(oldval > min) {
+                inputbox.value = String(oldval - 1);
+            }
+        });
+        const increment = el.querySelector("span.input-number-increment");
+        increment.addEventListener('click', function(event) {
+            const oldval = parseInt(inputbox.value);
+            const max = parseInt(inputbox.max);
+            if(oldval < max) {
+                inputbox.value = String(oldval + 1);
+            }
+        });
+    }
 }
 
 function windowChange(event) {
@@ -942,6 +1025,7 @@ function windowChange(event) {
     ticking = true;
 }
 
+prepareGeneratorInput(document.getElementsByClassName("aparam"));
 
 window.addEventListener("load", windowChange);
 window.addEventListener("resize", windowChange);
@@ -957,7 +1041,7 @@ simspace.addEventListener("mouseup", finishDragMessageVisual);
 // Listening for events leading to creation of a message
 
 document.getElementById("plus").addEventListener("click", createNode);
-document.getElementById("minus").addEventListener("click", deleteNode);
+document.getElementById("minus").addEventListener("click", deleteNodeMinus);
 // adding and deleting nodes on click
 
 addMode.addEventListener("click", inputMode);

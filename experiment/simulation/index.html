@@ -18,27 +18,76 @@
 				</div>
 		</div>
 		<div id = "buttonspace">
-			<h3 class="cp">Action on clicking on events and messages:</h3>
-			<div id="eventadd">
-				<button id="add">Add</button>
-				<button id="subtract">Delete</button>
+			<div class="wrapperalike">
+				<h3 class="cp">Action on clicking on events and messages:</h3>
+				<div id="eventadd">
+					<button id="add">Add</button>
+					<button id="subtract">Delete</button>
+				</div>
 			</div>
-			<h3 class="cp">Change process count:</h3>
-			<div id="processoradd">
-				<button id="plus">+</button>
-				<button id="minus">&#8211;</button>
+			<div class="wrapperalike">
+				<h3 class="cp">Change process count:</h3>
+				<div id="processoradd">
+					<button id="plus">+</button>
+					<button id="minus">&#8211;</button>
+				</div>
 			</div>
-			<h3 class="cp">Ready to check your understanding?</h3>
-			<div id="testspace">
-				<button id="mode">Test!</button>
-				<div id="wrapper" class="hidden">
-					<button id="check">Check my Answers</button>
+			<div id="testcontrols">
+				<div id="speed" class="difficulty">
+					<div class="gauge min-scaled">
+						<div class="slice-colors">
+							<div class="st slice-item"></div>
+							<div class="st slice-item"></div>
+							<div class="st slice-item"></div>
+						</div>
+						<div class="needle"></div>
+						<div class="gauge-center">
+							<div class="label">Difficulty</div>
+						</div>
+					</div>
+				</div>
+				<div id="testspace">
+					<h3 class="cp">Ready to check your understanding?</h3>
+					<div>
+						<button id="mode">Test!</button>
+					</div>
+					<div id="wrapper" class="hidden">
+						<button id="check">Check my Answers</button>	
+					</div>
 				</div>
 			</div>
 		</div>
 		<div id = "cyclespace" class = "hidden">
 			<div id = "iscycle">
 				Inconsistent state - resetting to last consistent state
+			</div>
+		</div>
+		<div id="antiwrapper">
+			<div id="generatespace">
+				<div class="header-border">
+					<h2 class="heading"><span>Generation Parameters</span></h2>
+					<div id="params">
+						<div class="aparam">
+							<label for="processors-gen"><h4>Number of pocessors:</h4></label>
+							<span class="input-number-decrement">–</span>
+							<input class="input-number" id="processors-gen" type="number" value="3" min="3" max="99">
+							<span class="input-number-increment">+</span>
+						</div>
+						<div class="aparam">
+							<label for="events-gen"><h4>Number of events:</h4></label>
+							<span class="input-number-decrement">–</span>
+							<input class="input-number" id="events-gen" type="number" value="7" min="7" max="99">
+							<span class="input-number-increment">+</span>
+						</div>
+						<div class="aparam">
+							<label for="messages-gen"><h4>Number of messages:</h4></label>
+							<span class="input-number-decrement">–</span>
+							<input class="input-number" id="messages-gen" type="number" value="4" min="4" max="99">
+							<span class="input-number-increment">+</span>
+						</div>
+						<button id="ordergenerate">Generate!</button>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div id="wrapper2">
@@ -64,6 +113,7 @@
 		<script src="https://cdn.jsdelivr.net/gh/virtual-labs/virtual-style@0.0.8-b/js/script.js"></script>
 		<script src="./js/helper.js" type="module"></script>
 		<script src="./js/simulation.js" type="module"></script>
+		<script src="./js/generate.js" type="module"></script>
         <script src="./js/main.js" type="module"></script>
 </body>
 </html>
