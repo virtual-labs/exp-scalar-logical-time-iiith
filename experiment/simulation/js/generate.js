@@ -118,7 +118,10 @@ export function generateTest(process_number, event_number, event_padding, messag
     const createMessage = function(myout) {
         const process = messageRandom();
         const time = event_padding * duplicate_check[process].size;
-        const process2 = messageRandom();
+        let process2 = null;
+        do{
+            process2 = messageRandom();
+        } while(process2 === process);
         const time2 = event_padding * duplicate_check[process2].size;
         let e1 = new Event(time, process);
         let e2 = new Event(time2, process2);

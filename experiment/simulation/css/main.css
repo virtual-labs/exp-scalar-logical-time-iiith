@@ -6,7 +6,7 @@ h3.cp {
 }
 
 body {
-    padding-top: 10px;
+    padding-top: 5px;
 }
 
 #tellspace {
@@ -193,6 +193,10 @@ input[type=number]
     box-shadow: 0 0 6px rgba(35, 173, 255, 1);
 }
 
+#tellspace:has(~ #wrapper2.hidden) .event:hover {
+    box-shadow: 0 0 6px rgba(10, 10, 10, 1);
+}
+
 .delete .event:hover {
     box-shadow: 0 0 6px rgba(255, 173, 35, 1);
 }
@@ -325,6 +329,10 @@ input[type=checkbox].check-label:checked ~ .event-tip {
 
 #wrapper.hidden {
     display: none;
+}
+
+#wrapper2 {
+    margin-bottom: 5px;
 }
 
 #wrapper2.hidden {

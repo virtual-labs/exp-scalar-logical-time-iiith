@@ -417,7 +417,7 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
 }
 
 // Creating an event
-function createEventVisual(target, offsetX, noupdate = false) {
+function createEventVisual(target, offsetX, noupdate = false, testing = false) {
     const toadd = document.createElement("div");
     toadd.className = "event";
     toadd.style.left = String(offsetX - shapeOffset) + "px";
@@ -437,14 +437,19 @@ function createEventVisual(target, offsetX, noupdate = false) {
     toadd3.type = "checkbox";
     toadd3.className = "check-label";
     toadd3.id = ID_FORMAT + 'input';
-    toadd3.addEventListener("change", 
-        function(event) {
-            displayCausalGraph(
-                parseInt(toadd.dataset.process),
-                roundedX
-            );
-        }
-    );
+    if(testing) {
+        toadd3.checked = true;
+    }
+    else {
+        toadd3.addEventListener("change", 
+            function(event) {
+                displayCausalGraph(
+                    parseInt(toadd.dataset.process),
+                    roundedX
+                );
+            }
+        );
+    }
     // Creating an invisible checkbox
     const toadd4 = document.createElement("label");
     toadd4.className = "check-label";
@@ -513,11 +518,11 @@ function deleteEventVisual(target, currentTarget, noupdate) {
 }
 
 // Manages event creation and deletion
-function manageEventVisual(target, offsetX) {
+function manageEventVisual(target, offsetX, testing = false) {
     if (addEventsMessage) {
         if(target.className == "slider-bone") {
             // We don't want one event on top of another for the sake of clarity
-            return createEventVisual(target, offsetX);
+            return createEventVisual(target, offsetX, false, testing);
         }
     }
     else {
@@ -600,19 +605,7 @@ function createMessageVisual(event) {
     if((!ticking)  && event.button < 4) {
         if(event.target.className === "slider-bone" && addEventsMessage) {
             if (!(messagestate === 1)) {
-                const toadd = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                toadd.setAttributeNS(null, "class", "message");
-                const relPos = getRelativePosition(event.target, event.currentTarget);
-                toadd.setAttributeNS(null, "x1", String(event.offsetX + relPos.x) + 'px');
-                toadd.setAttributeNS(null, "y1", String(relPos.y) + 'px');
-                toadd.setAttributeNS(null, "x2", String(event.offsetX + relPos.x) + 'px');
-                toadd.setAttributeNS(null, "y2", String(relPos.y) + 'px');
-                // Creating temporary line for guiding message drawing
-                messagespace.appendChild(toadd);
-                // Making the line visible
-                currentMessage = toadd;
-                fromMessage = event.target;
-                [fromEvent, fromEventobj] = manageEventVisual(event.target, event.offsetX);
+                createMessageViusalGraphics(event.target, event.currentTarget, event.offsetX);
                 messagestate = 1;
             }
             // Signal start of a potential message
@@ -621,6 +614,22 @@ function createMessageVisual(event) {
             manageEventVisual(event.target, -1);
         }
     }
+}
+
+function createMessageViusalGraphics(target, currentTarget, offsetX, testing = false) {
+    const toadd = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    toadd.setAttributeNS(null, "class", "message");
+    const relPos = getRelativePosition(target, currentTarget);
+    toadd.setAttributeNS(null, "x1", String(offsetX + relPos.x) + 'px');
+    toadd.setAttributeNS(null, "y1", String(relPos.y) + 'px');
+    toadd.setAttributeNS(null, "x2", String(offsetX + relPos.x) + 'px');
+    toadd.setAttributeNS(null, "y2", String(relPos.y) + 'px');
+    // Creating temporary line for guiding message drawing
+    messagespace.appendChild(toadd);
+    // Making the line visible
+    currentMessage = toadd;
+    fromMessage = target;
+    [fromEvent, fromEventobj] = manageEventVisual(target, offsetX, testing);
 }
 
 // Visualize creation
@@ -723,44 +732,7 @@ function finishDragMessageVisual(event) {
             }
             else {
                 messagestate = 3;
-                const relpos = getRelativePosition(event.target, event.currentTarget);
-                currentMessage.setAttributeNS(null, "x2", String(relpos.x + event.offsetX) + 'px');
-                currentMessage.setAttributeNS(null, "y2", String(relpos.y) + 'px');
-                const [toEvent, toEventobj] = createEventVisual(event.target, event.offsetX, true);
-                toEvent.classList.add('to');
-                // Setting message endpoint for line
-                fromEvent.classList.add('from');
-                // Setting message startpoint for line
-                messagespace.removeChild(currentMessage);
-                // Removing temporary line
-                currentMessage.addEventListener("click", deleteMessageVisual);
-                // Adding event listener for deletion
-                messages.push(
-                    createMessage(
-                        fromEventobj,
-                        toEventobj
-                    )
-                );
-                // Adding record of message to list of messages
-                if(updateEventTimes()) {
-                    // Cycle has been detected - undo message
-                    messages.pop();
-                    deleteEventVisual(toEvent, toEvent.parentElement);
-                    deleteEventVisual(fromEvent, fromEvent.parentElement);
-                    showCyclePopup();
-                }
-                else {
-                    messagespace.appendChild(
-                        drawMessage(currentMessage, fromMessage.dataset.process,
-                        event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
-                    );
-                    displayCausalGraph(current_display_p, current_display_t);
-                }
-                // Adding graphics group to show
-                currentMessage = null;
-                fromMessage = null;
-                fromEvent = null;
-                fromEventobj = null;
+                finishDragMessageVisualGraphics(event.target, event.currentTarget, event.offsetX);
                 messagestate = 0;
                 // Resetting state for next message
             }
@@ -769,6 +741,49 @@ function finishDragMessageVisual(event) {
             failedMessageVisual();
         }
     }
+}
+
+function finishDragMessageVisualGraphics(target, currentTarget, offsetX, testing = false) {
+    const relpos = getRelativePosition(target, currentTarget);
+    const [toEvent, toEventobj] = createEventVisual(target, offsetX, true, testing);
+    currentMessage.setAttributeNS(null, "x2", String(relpos.x + offsetX) + 'px');
+    currentMessage.setAttributeNS(null, "y2", String(relpos.y) + 'px');
+    toEvent.classList.add('to');
+    // Setting message endpoint for line
+    fromEvent.classList.add('from');
+    // Setting message startpoint for line
+    messagespace.removeChild(currentMessage);
+    // Removing temporary line
+    currentMessage.addEventListener("click", deleteMessageVisual);
+    // Adding event listener for deletion
+    messages.push(
+        createMessage(
+            fromEventobj,
+            toEventobj
+        )
+    );
+    // Adding record of message to list of messages
+    if(!testing && updateEventTimes()) {
+        // Cycle has been detected - undo message
+        messages.pop();
+        deleteEventVisual(toEvent, toEvent.parentElement);
+        deleteEventVisual(fromEvent, fromEvent.parentElement);
+        showCyclePopup();
+    }
+    else {
+        messagespace.appendChild(
+            drawMessage(currentMessage, fromMessage.dataset.process,
+            target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
+        );
+        if(!testing) {
+            displayCausalGraph(current_display_p, current_display_t);
+        }
+    }
+    // Adding graphics group to show
+    currentMessage = null;
+    fromMessage = null;
+    fromEvent = null;
+    fromEventobj = null;
 }
 
 function createNode(genMode, defaultval=indefault) {
@@ -825,12 +840,16 @@ function createNode(genMode, defaultval=indefault) {
         
         ticks.push(defaultval);
         // Adding to array of process ticks
+
+        if(!genMode) {
+            return toadd4;
+        }
     }
 }
 
 const createNodePlus = createNode(true);
 const createNodeMode = function(tick_val) {
-    createNode(false, tick_val)();
+    return createNode(false, tick_val)();
 }
 
 function deleteNode(changeMode) {
@@ -962,6 +981,8 @@ function useMode(wrappingforanswers) {
             addMode.removeEventListener("click", inputMode);
             subMode.removeEventListener("click", inputMode);
             newtext = document.createTextNode("Simulate");
+            addEventsMessage = true;
+            updateModes();
             deleteAllNodes();
             mode = 1;
         }
@@ -1056,6 +1077,9 @@ function generator(event) {
     const process_number = parseInt(document.getElementById("processors-gen").value);
     const event_number = parseInt(document.getElementById("events-gen").value);
     const messages_number = parseInt(document.getElementById("messages-gen").value);
+    const event_padding = 100;
+    const event_offset = 50;
+    const message_set = new Set();
     let max_ticks = 1;
     switch(test_progress) {
         case 2:
@@ -1065,10 +1089,27 @@ function generator(event) {
         default:
         case 0:
     }
-    const outed = generateTest(process_number, event_number, 50, messages_number, test_progress, max_ticks);
-    for(let i = 0; i < process_number; ++i) {
-        createNodeMode(outed.tic[i]);
+    const sliderBones = []
+    const outed = generateTest(process_number, event_number, event_padding, messages_number, test_progress, max_ticks);
+    for(const mes of outed.mes) {
+        message_set.add(mes.e1);
+        message_set.add(mes.e2);
     }
+    for(let i = 0; i < process_number; ++i) {
+        sliderBones.push(createNodeMode(outed.tic[i]));
+    }
+    for(const eve of outed.eve) {
+        if(!message_set.has(eve)) {
+            createEventVisual(sliderBones[eve.p], event_offset + eve.t, true, true);
+        }
+    }
+    for(const mes of outed.mes) {
+        const e1 = mes.e1;
+        const e2 = mes.e2;
+        createMessageViusalGraphics(sliderBones[e1.p], simspace, event_offset + e1.t, true);
+        finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, event_offset + e2.t, true);
+    }
+    updateEventTimes();
 }
 
 prepareGeneratorInput(generator_params);
