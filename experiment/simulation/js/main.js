@@ -2,6 +2,7 @@
 
 import { computeScalar, createEvent, createMessage } from "./simulation.js";
 import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel, setInputFilter } from "./helper.js";
+import { generateTest } from "./generate.js";
 
 const tellspace = document.getElementById("tellspace");
 // Area of work
@@ -47,6 +48,13 @@ const events = [];
 // Array of all events
 
 const wrappers = [checkanswerswrap, displaywrap];
+// Wrapping divisions
+
+const generator_params = document.getElementsByClassName("aparam");
+// Parameters for generating
+
+const generatebutton = document.getElementById("ordergenerate");
+// Generate 
 
 let mode = 0;
 /* Modes - 0 - Simulate
@@ -54,9 +62,11 @@ let mode = 0;
 */
 
 let test_progress = 0;
-/* Progress -   0 - Easy
-                1 - Medium
-                2 - Hard
+/* Progress -                       Process             Events              Messages
+                                Min         Max     Min         Max     Min         Max
+                0 - Easy        3           5       7           14      4           10
+                1 - Medium      5           7       14          21      8           20
+                2 - Hard        7           99      17          99      16          99
 */
 
 let test_lock = false;
@@ -99,6 +109,11 @@ const causal_chain = new Map();
 
 let current_display_p = -1;
 let current_display_t = -1;
+
+const inmin = 1;
+const inmax = 5;
+const indefault = 1;
+// Ticking of processes, min, max
 
 // Function is used to determine whether the current width can hold all events. Empirically determined
 function mysteryAdjustment(curwidth, vw, max_events_offset) {
@@ -384,11 +399,13 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
         }
     });
     // Creating - button
+    
     setInputFilter(target2, function(value) {
         return /^\d*$/.test(value) && (value === "" || (
         parseInt(value) <= inmax &&
         parseInt(value) >= inmin))
     });
+    // Setting up filter
     
     toadd.appendChild(toadd2);
     toadd.appendChild(toadd3);
@@ -754,57 +771,66 @@ function finishDragMessageVisual(event) {
     }
 }
 
-function createNode() {
-    
-    const inmin = 1;
-    const inmax = 5;
-    const indefault = 1;
-    
-    const toadd = document.createElement("div");
-    toadd.className = "slider-container";
-    // Creating a container for the node timeline
-    
-    const node_len = nodes.length;
-    // The index of this process
+function createNode(genMode, defaultval=indefault) {
+    return function(event) {
+        
+        
+        const toadd = document.createElement("div");
+        toadd.className = "slider-container";
+        // Creating a container for the node timeline
+        
+        const node_len = nodes.length;
+        // The index of this process
 
-    const toadd2 = document.createElement("input");
-    toadd2.type = "number";
-    toadd2.className = "increment";
-    toadd2.min = inmin.toString();
-    toadd2.max = inmax.toString();
-    toadd2.value = inmin.toString();
-    toadd2.dataset.process = node_len;
-    // Text boxes for setting increment in time step at each processor
-    // Change CSS values for class increment should the max increase beyond some digits
-    
-    const toadd3 = document.createElement("div");
-    toadd3.className = "slider";
-    // Representing timeline of each node
-    
-    const toadd4 = document.createElement("div");
-    toadd4.className = "slider-bone";
-    toadd4.dataset.process = node_len;
-    //toadd4.addEventListener("click", manageEventVisual);
-    toadd3.appendChild(toadd4);
-    // Adding straight line representing timeline
-    
-    toadd.appendChild(toadd2);
-    // Adding input to timeline
+        const toadd2 = document.createElement("input");
+        toadd2.type = "number";
+        toadd2.className = "increment";
+        toadd2.min = inmin.toString();
+        toadd2.max = (inmax > defaultval ? inmax.toString() : defaultval.toString());
+        toadd2.value = defaultval;
+        toadd2.dataset.process = node_len;
+        // Text boxes for setting increment in time step at each processor
+        // Change CSS values for class increment should the max increase beyond some digits
+        
+        const toadd3 = document.createElement("div");
+        toadd3.className = "slider";
+        // Representing timeline of each node
+        
+        const toadd4 = document.createElement("div");
+        toadd4.className = "slider-bone";
+        toadd4.dataset.process = node_len;
+        //toadd4.addEventListener("click", manageEventVisual);
+        toadd3.appendChild(toadd4);
+        // Adding straight line representing timeline
+        
+        toadd.appendChild(toadd2);
+        // Adding input to timeline
 
-    prepareInputbuttons(toadd, toadd2, inmin, inmax);
-    // Preparing input buttons
-    
-    toadd.appendChild(toadd3);
-    // Setting up the a container div for each node
-    
-    simspace.appendChild(toadd);
-    // Adding the container div to the simulation
-    
-    nodes.push(toadd);
-    // Keeping track of the container div
-    
-    ticks.push(indefault);
-    // Adding to array of process ticks
+        if(genMode) {
+            prepareInputbuttons(toadd, toadd2, inmin, inmax);
+            // Preparing input buttons        
+        }
+        else {
+            toadd2.tabIndex = "-1";
+        }
+        
+        toadd.appendChild(toadd3);
+        // Setting up the a container div for each node
+        
+        simspace.appendChild(toadd);
+        // Adding the container div to the simulation
+        
+        nodes.push(toadd);
+        // Keeping track of the container div
+        
+        ticks.push(defaultval);
+        // Adding to array of process ticks
+    }
+}
+
+const createNodePlus = createNode(true);
+const createNodeMode = function(tick_val) {
+    createNode(false, tick_val)();
 }
 
 function deleteNode(changeMode) {
@@ -912,7 +938,7 @@ function useMode(wrappingforanswers) {
             simspace.addEventListener("mouseleave", endDragMessageVisual);
             simspace.addEventListener("mouseup", finishDragMessageVisual);
 
-            document.getElementById("plus").addEventListener("click", createNode);
+            document.getElementById("plus").addEventListener("click", createNodePlus);
             document.getElementById("minus").addEventListener("click", deleteNodeMinus);
 
             addMode.addEventListener("click", inputMode);
@@ -930,7 +956,7 @@ function useMode(wrappingforanswers) {
             simspace.removeEventListener("mouseleave", endDragMessageVisual);
             simspace.removeEventListener("mouseup", finishDragMessageVisual);
 
-            document.getElementById("plus").removeEventListener("click", createNode);
+            document.getElementById("plus").removeEventListener("click", createNodePlus);
             document.getElementById("minus").removeEventListener("click", deleteNodeMinus);
 
             addMode.removeEventListener("click", inputMode);
@@ -1025,7 +1051,27 @@ function windowChange(event) {
     ticking = true;
 }
 
-prepareGeneratorInput(document.getElementsByClassName("aparam"));
+function generator(event) {
+    deleteAllNodes();
+    const process_number = parseInt(document.getElementById("processors-gen").value);
+    const event_number = parseInt(document.getElementById("events-gen").value);
+    const messages_number = parseInt(document.getElementById("messages-gen").value);
+    let max_ticks = 1;
+    switch(test_progress) {
+        case 2:
+            max_ticks += 2;
+        case 1:
+            max_ticks += 2;
+        default:
+        case 0:
+    }
+    const outed = generateTest(process_number, event_number, 50, messages_number, test_progress, max_ticks);
+    for(let i = 0; i < process_number; ++i) {
+        createNodeMode(outed.tic[i]);
+    }
+}
+
+prepareGeneratorInput(generator_params);
 
 window.addEventListener("load", windowChange);
 window.addEventListener("resize", windowChange);
@@ -1040,7 +1086,7 @@ simspace.addEventListener("mouseleave", endDragMessageVisual);
 simspace.addEventListener("mouseup", finishDragMessageVisual);
 // Listening for events leading to creation of a message
 
-document.getElementById("plus").addEventListener("click", createNode);
+document.getElementById("plus").addEventListener("click", createNodePlus);
 document.getElementById("minus").addEventListener("click", deleteNodeMinus);
 // adding and deleting nodes on click
 
@@ -1050,4 +1096,7 @@ subMode.addEventListener("click", inputMode);
 
 modechange.addEventListener("click", useMode(wrappers));
 // Switching between test mode and simulate mode
+
+generatebutton.addEventListener("click", generator);
+// Generates a new test on click
 updateModes();

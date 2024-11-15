@@ -46,6 +46,12 @@ body {
     margin: 0 min(1vw,10px) 0 0;
 }
 
+#tellspace:has(~ #wrapper2.hidden) .increment {
+    pointer-events: none;
+    width: 35px;
+    text-align: center;
+}
+
 .slider {
     -webkit-appearance: none;
     appearance: none;
@@ -57,6 +63,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+#tellspace:has(~ #wrapper2.hidden) .slider-bone:hover {
+    opacity: 0.7;
+    box-shadow: 0 0 6px rgba(120, 120, 120, 1);
 }
 
 .slider-bone:hover {
@@ -501,6 +512,8 @@ input[type=checkbox].check-label:checked ~ .event-tip {
 #speed:has(~ div #wrapper.hidden) {
     display: none;
 }
+
+
 
 .difficulty {
     display: table;
