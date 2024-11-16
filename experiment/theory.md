@@ -28,6 +28,8 @@ A clock *C* for a process *P* is an incrementing counter assigning each value it
     This is called *monotonicity* and satisifes the consistency property of the clock.  
     Non-negative integers are used in logical clocks by convention.
 
+A single integer is used to keep track of time for scalar logical clock.
+
 ## Rules for Ordering
 
 1. Local Rule:

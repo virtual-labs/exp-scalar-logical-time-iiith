@@ -5,10 +5,6 @@ h3.cp {
     font-weight: 500;
 }
 
-body {
-    padding-top: 5px;
-}
-
 #tellspace {
     border: 1px inset black;
     width: 90vw;
@@ -408,10 +404,6 @@ input[type=checkbox].check-label:checked ~ .event-tip {
 
 #wrapper.hidden {
     display: none;
-}
-
-#wrapper2 {
-    margin-bottom: 5px;
 }
 
 #wrapper2.hidden {
