@@ -1,7 +1,7 @@
 "use strict";
 
 import { computeScalar, createEvent, createMessage } from "./simulation.js";
-import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel, setInputFilter } from "./helper.js";
+import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel, setInputFilter, Semaphore } from "./helper.js";
 import { generateTest } from "./generate.js";
 
 const tellspace = document.getElementById("tellspace");
@@ -69,8 +69,65 @@ let test_progress = 0;
                 2 - Hard        7           99      17          99      16          99
 */
 
-let test_lock = false;
-// Prevents simulation until released
+let test_state = 0;
+// Test states - 0 - nothing has been done (newly entered generate mode) - 1 - generate has been clicked - 2 - check my answers clicked
+
+const DIFFICULTY = {
+    EASY: {
+        PRO: {
+            MIN: 3,
+            MAX: 5
+        },
+        EVE: {
+            MIN: 7,
+            MAX: 14
+        },
+        MES: {
+            MIN: 4,
+            MAX: 10
+        }
+    },
+    MEDIUM: {
+        PRO: {
+            MIN: 5,
+            MAX: 7
+        },
+        EVE: {
+            MIN: 14,
+            MAX: 21
+        },
+        MES: {
+            MIN: 8,
+            MAX: 20
+        }
+    },
+    HARD: {
+        PRO: {
+            MIN: 7,
+            MAX: 99
+        },
+        EVE: {
+            MIN: 17,
+            MAX: 99
+        },
+        MES: {
+            MIN: 16,
+            MAX: 99
+        }
+    }
+}
+
+Object.freeze(DIFFICULTY);
+// Treat as enum
+
+const check_answers = document.getElementById("check");
+// Check answers
+
+const speed = document.getElementById("speed");
+// Current difficulty indicator
+
+const needle = speed.querySelector("div.needle");
+// Selecting needle
 
 let max_events_offset = 0;
 // Local Co-ordinates in simspace  of the rightmost event
@@ -154,7 +211,7 @@ function manageTime(event) {
 }
 
 // Function for updating times associated with each element
-function updateEventTimes() {
+function updateEventTimes(testing = false) {
     const cycleDetect = computeScalar(events, messages, ticks, event_time, causal_chain);
     if(!cycleDetect) {
         let i = events.length - 1;
@@ -169,14 +226,50 @@ function updateEventTimes() {
                 }
                 // Remove all previous text
                 const toadd = document.createTextNode('e');
+                const toadd8 = document.createElement("span");
                 const toadd2 = document.createElement("sub");
                 const toadd3 = document.createTextNode(events[i].id.toString());
-                const toadd4 = document.createTextNode(':' + String(event_time.get(events[i])));
+                let toadd4 = null;
+                if(testing) {
+                    const toadd6 = document.createElement("input");
+                    toadd6.type = "number";
+                    toadd6.value = "";
+                    toadd6.min = 1;
+                    toadd6.max = 999;
+                    toadd6.classList.add("enquirer");
+                    setInputFilter(toadd6, function(value) {
+                        return /^\d*$/.test(value) && (value === "" || (
+                        parseInt(value) <= toadd6.max &&
+                        parseInt(value) >= toadd6.min))
+                    });
+                    const toadd12 = document.createElement("div");
+                    toadd12.classList.add("flipper");
+                    const toadd7 = document.createElement("span");
+                    toadd7.classList.add("answerer");
+                    const toadd10 = document.createTextNode(String(event_time.get(events[i])));
+                    toadd7.appendChild(toadd10);
+                    const toadd11 = document.createElement("span");
+                    toadd11.classList.add("separator");
+                    const toadd8 = document.createTextNode('|');
+                    toadd11.appendChild(toadd8);
+                    toadd12.appendChild(toadd11);
+                    toadd12.appendChild(toadd7);
 
+                    toadd4 = document.createElement("div");
+                    toadd4.appendChild(toadd6);
+                    toadd4.appendChild(toadd12);
+                }
+                else {
+                    toadd4 = document.createTextNode(':' + String(event_time.get(events[i])));
+                }
                 toadd2.appendChild(toadd3);
+                toadd8.appendChild(toadd2);
                 eventtip.appendChild(toadd);
-                eventtip.appendChild(toadd2);
+                eventtip.appendChild(toadd8);
                 eventtip.appendChild(toadd4);
+                const dims = eventtip.getBoundingClientRect();
+                const dims2 = eventtip.parentNode.getBoundingClientRect();
+                eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
                 // Adding new time
             }
             i--;
@@ -405,6 +498,11 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
         parseInt(value) <= inmax &&
         parseInt(value) >= inmin))
     });
+    target2.addEventListener('blur', function(event) {
+        if(target2.value === "") {
+            target2.value = target2.min;
+        }
+    });
     // Setting up filter
     
     toadd.appendChild(toadd2);
@@ -439,6 +537,7 @@ function createEventVisual(target, offsetX, noupdate = false, testing = false) {
     toadd3.id = ID_FORMAT + 'input';
     if(testing) {
         toadd3.checked = true;
+        toadd3.disabled = true;
     }
     else {
         toadd3.addEventListener("change", 
@@ -942,9 +1041,7 @@ function inputMode(event) {
 function useMode(wrappingforanswers) {
     return function(event) {
         let newtext = null;
-        console.log(mode);
         for (let ele of wrappingforanswers) {
-            console.log(ele);
             ele.classList.toggle("hidden");
         }
         if(mode === 1) {
@@ -993,6 +1090,7 @@ function useMode(wrappingforanswers) {
             }
             mode = 0;
         }
+        test_state = 0;
         while(event.target.firstChild) {
             event.target.removeChild(event.target.lastChild);
         }
@@ -1004,9 +1102,14 @@ function prepareGeneratorInput(elements) {
     for (const el of elements) {
         const inputbox = el.querySelector("input[type=number].input-number");
         setInputFilter(inputbox, function(value) {
-            return /^\d*$/.test(value) &&
+            return /^\d*$/.test(value) && (value === "" || (
             parseInt(value) <= parseInt(inputbox.max) &&
-            parseInt(value) >= parseInt(inputbox.min)
+            parseInt(value) >= parseInt(inputbox.min)))
+        });
+        inputbox.addEventListener("blur", function(event) {
+            if(inputbox.value === "") {
+                inputbox.value = inputbox.min;
+            }
         });
         const decrement = el.querySelector("span.input-number-decrement");
         decrement.addEventListener('click', function(event) {
@@ -1072,13 +1175,17 @@ function windowChange(event) {
     ticking = true;
 }
 
-function generator(event) {
+async function generator(event) {
+    test_state = 1;
     deleteAllNodes();
     const process_number = parseInt(document.getElementById("processors-gen").value);
     const event_number = parseInt(document.getElementById("events-gen").value);
     const messages_number = parseInt(document.getElementById("messages-gen").value);
     const event_padding = 100;
-    const event_offset = 50;
+    const event_offset = [];
+    for(let i = 0; i < process_number; ++i) {
+        event_offset.push(20 + Math.random() * 150);
+    }
     const message_set = new Set();
     let max_ticks = 1;
     switch(test_progress) {
@@ -1100,16 +1207,103 @@ function generator(event) {
     }
     for(const eve of outed.eve) {
         if(!message_set.has(eve)) {
-            createEventVisual(sliderBones[eve.p], event_offset + eve.t, true, true);
+            createEventVisual(sliderBones[eve.p], event_offset[eve.p] + eve.t, true, true);
         }
     }
+    const throttler = new Semaphore(1);
+    const all_at_once = function(sliderBones, simspace, e1, e2, event_offset, process_number) {
+        createMessageViusalGraphics(sliderBones[e1.p], simspace, event_offset[e1.p] + e1.t, true);
+        finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, event_offset[e2.p] + e2.t, true);
+    }
     for(const mes of outed.mes) {
+        await throttler.acquire();
         const e1 = mes.e1;
         const e2 = mes.e2;
-        createMessageViusalGraphics(sliderBones[e1.p], simspace, event_offset + e1.t, true);
-        finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, event_offset + e2.t, true);
+        all_at_once(sliderBones, simspace, e1, e2, event_offset, process_number);
+        throttler.release();
+        //throttler.callFunction(all_at_once, sliderBones, simspace, e1, e2, event_offset, process_number);
     }
-    updateEventTimes();
+    updateEventTimes(true);
+}
+
+function checkAnswers(event) {
+    if(event.button <= 1 && test_state === 1) {
+        test_state = 2;
+        checkLogic();
+    }
+}
+
+function checkLogic() {
+    const tips = document.querySelectorAll("span.event-tip");
+    let wrong = false;
+    for(const tip of tips) {
+        const useranswer = tip.querySelector("input[type=number].enquirer");
+        const correctanswer = tip.querySelector("span.answerer");
+        const flipper = tip.querySelector("div.flipper");
+        console.log(useranswer.value);
+        console.log(correctanswer.textContent);
+        if(parseInt(useranswer.value) === parseInt(correctanswer.textContent)) {
+            correctanswer.classList.add("correct");
+        }
+        else {
+            correctanswer.classList.add("wrong");
+            wrong = true;
+        }
+        flipper.classList.add("answered");
+    }
+    if(!wrong) {
+        speed.classList.toggle("clickable");
+    }
+}
+
+function upgradeDifficulty(event) {
+    if(event.button <= 1 && test_state === 2 && speed.classList.contains("clickable")) {
+        test_state = 2;
+        speed.classList.toggle("clickable");
+        upgradeDifficultyLogic();
+    }
+}
+
+function setMinMaxVal(ele, min, max) {
+    ele.min = min;
+    ele.max = max;
+    ele.value = min;
+}
+
+function upgradeDifficultyLogic() {
+    let event_min = DIFFICULTY.HARD.EVE.MIN;
+    let event_max = DIFFICULTY.HARD.EVE.MAX;
+    let proc_min = DIFFICULTY.HARD.PRO.MIN;
+    let proc_max = DIFFICULTY.HARD.PRO.MAX;
+    let mes_min = DIFFICULTY.HARD.MES.MIN;
+    let mes_max = DIFFICULTY.HARD.MES.MAX;
+    switch(test_progress) {
+        case 0:
+            needle.style.transform = `rotate(90deg)`;
+            event_min = DIFFICULTY.MEDIUM.EVE.MIN;
+            event_max = DIFFICULTY.MEDIUM.EVE.MAX;
+            proc_min = DIFFICULTY.MEDIUM.PRO.MIN;
+            proc_max = DIFFICULTY.MEDIUM.PRO.MAX;
+            mes_min = DIFFICULTY.MEDIUM.MES.MIN;
+            mes_max = DIFFICULTY.MEDIUM.MES.MAX;
+            test_progress = 1;
+            break;
+        case 1:
+            needle.style.transform = `rotate(155deg)`;
+            test_progress = 2;
+    }
+    for(const generator of generator_params) {
+        const inputbox = generator.querySelector("input[type=number].input-number");
+        if(inputbox.getAttribute("id").includes("events")) {
+            setMinMaxVal(inputbox, event_min, event_max);
+        }
+        else if(inputbox.getAttribute("id").includes("processors")) {
+            setMinMaxVal(inputbox, proc_min, proc_max);
+        }
+        else if(inputbox.getAttribute("id").includes("messages")) {
+            setMinMaxVal(inputbox, mes_min, mes_max);
+        }
+    }
 }
 
 prepareGeneratorInput(generator_params);
@@ -1140,4 +1334,10 @@ modechange.addEventListener("click", useMode(wrappers));
 
 generatebutton.addEventListener("click", generator);
 // Generates a new test on click
+
+check_answers.addEventListener("click", checkAnswers);
+// Checks answers of test
+
+speed.addEventListener("click", upgradeDifficulty);
+// Upgrade difficulty
 updateModes();

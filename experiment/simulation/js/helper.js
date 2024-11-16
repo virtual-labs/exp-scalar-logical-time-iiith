@@ -110,3 +110,53 @@ export function setInputFilter(textbox, inputFilter) {
       })
   })
 }
+
+export class Semaphore {
+    
+    constructor(max) {
+        this.counter = 0;
+        this.max = max;
+        this.waiting = [];    
+    }
+    
+    take ()
+    {
+        if (this.waiting.length > 0 && this.counter < this.max) {
+            this.counter++;
+            let promise = waiting.shift();
+            promise.resolve();
+        }
+    }
+    
+    acquire () {
+        if(this.counter < this.max) {
+            this.counter++;
+            return new Promise(resolve => {
+                resolve();
+            });
+        } 
+        else {
+            return new Promise((resolve, err) => {
+                this.waiting.push({resolve: resolve, err: err});
+            });
+        }
+    }
+      
+    release () {
+        this.counter--;
+        this.take();
+    }
+    
+    purge () {
+        let unresolved = waiting.length;
+    
+        for (let i = 0; i < unresolved; i++) {
+            waiting[i].err('Purging uncompleted tasks');
+        }
+
+        counter = 0;
+        waiting = [];
+      
+        return unresolved;
+    }
+}
