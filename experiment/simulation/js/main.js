@@ -1205,11 +1205,14 @@ async function generator(event) {
     for(let i = 0; i < process_number; ++i) {
         sliderBones.push(createNodeMode(outed.tic[i]));
     }
+    let max_time = 0;
     for(const eve of outed.eve) {
         if(!message_set.has(eve)) {
             createEventVisual(sliderBones[eve.p], event_offset[eve.p] + eve.t, true, true);
         }
+        max_time = (max_time > event_offset[eve.p] + eve.t) ? max_time : (event_offset[eve.p] + eve.t);
     }
+    simspace.width = String(max_time + 5 * event_padding) + 'px';
     const throttler = new Semaphore(1);
     const all_at_once = function(sliderBones, simspace, e1, e2, event_offset, process_number) {
         createMessageViusalGraphics(sliderBones[e1.p], simspace, event_offset[e1.p] + e1.t, true);
