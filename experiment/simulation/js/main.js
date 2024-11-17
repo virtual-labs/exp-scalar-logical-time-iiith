@@ -172,6 +172,9 @@ const inmax = 5;
 const indefault = 1;
 // Ticking of processes, min, max
 
+let current_max_z = 0;
+// Helps move selected event tips to the front
+
 // Function is used to determine whether the current width can hold all events. Empirically determined
 function mysteryAdjustment(curwidth, vw, max_events_offset) {
     return curwidth - 13 - 10 * vw >= max_events_offset;
@@ -215,6 +218,7 @@ function updateEventTimes(testing = false) {
     const cycleDetect = computeScalar(events, messages, ticks, event_time, causal_chain);
     if(!cycleDetect) {
         let i = events.length - 1;
+        current_max_z = events.length;
         while(i >= 0) {
             const ID_FORMAT = events[i].p.toString() + '-' + events[i].t.toString() + '-tip';
             // Format of event tool tip
@@ -267,6 +271,12 @@ function updateEventTimes(testing = false) {
                 eventtip.appendChild(toadd);
                 eventtip.appendChild(toadd8);
                 eventtip.appendChild(toadd4);
+                eventtip.parentNode.style.zIndex = String(events.length - i);
+                eventtip.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    current_max_z++;
+                    eventtip.parentNode.style.zIndex = String(current_max_z);
+                }, true);
                 const dims = eventtip.getBoundingClientRect();
                 const dims2 = eventtip.parentNode.getBoundingClientRect();
                 eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';

@@ -72,6 +72,7 @@ h3.cp {
 }
 
 .slider-bone {
+    position: relative;
     width: 100%;
     height: max(min(1vh, 3px), 1px);
     background-color: black;
@@ -270,11 +271,12 @@ label.check-label {
     border-radius: 6px;
     z-index: 4;
     opacity: 0;
-    bottom: 62px;
+    bottom: 66px;
     display: flex;
     flex-direction: row;
     width: fit-content;
     color: rgb(237, 255, 222);
+    border: solid orange;
 }
 
 .event-tip:after {
@@ -282,8 +284,8 @@ label.check-label {
     position: absolute;
     top: 92%;
     left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
+    margin-left: -8px;
+    border-width: 7px;
     border-style: solid;
     border-color: #463071 transparent transparent transparent;
 }
