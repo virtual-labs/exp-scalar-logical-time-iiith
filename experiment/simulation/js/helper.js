@@ -82,33 +82,20 @@ function rotatePoint(p1, pc, angle) {
 }
 
 export function setInputFilter(textbox, inputFilter) {
-  [
-    "input",
-    "keydown",
-    "keyup",
-    "mousedown",
-    "mouseup",
-    "select",
-    "contextmenu",
-    "drop",
-  ].forEach(function (event) {
-      textbox.addEventListener(event, function () {
-          if (inputFilter(this.value)) {
-              this.oldValue = this.value
-              this.oldSelectionStart = this.selectionStart
-              this.oldSelectionEnd = this.selectionEnd
-          } 
-          else if (this.hasOwnProperty("oldValue")) {
-              this.value = this.oldValue
-              if(this.oldSelectionEnd !== null && this.oldSelectionEnd !== null) {
-                  this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd)
-              }
-          } 
-          else {
-              this.value = ""
-          }
-      })
-  })
+    textbox.addEventListener("input", (event) => {
+        if(event.data !== null) {
+            if(!textbox.hasOwnProperty("oldValue")) {
+                textbox.oldValue = "";
+            }
+            const new_val = textbox.oldValue + event.data; 
+            if(inputFilter(new_val)) {
+                textbox.oldValue = new_val;
+            }
+            else if (textbox.hasOwnProperty("oldValue")) {
+                textbox.value = textbox.oldValue;
+            }
+        }
+    });
 }
 
 export class Semaphore {

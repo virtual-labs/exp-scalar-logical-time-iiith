@@ -1264,7 +1264,7 @@ function checkLogic() {
         }
         flipper.classList.add("answered");
     }
-    if(!wrong) {
+    if(!wrong && test_progress < 2) {
         speed.classList.toggle("clickable");
     }
 }
