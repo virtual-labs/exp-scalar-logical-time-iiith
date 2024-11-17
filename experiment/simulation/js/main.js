@@ -32,9 +32,6 @@ const pinboard = document.getElementById("pinboard");
 const modechange = document.getElementById("mode");
 // Changing modes
 
-const checkanswers = document.getElementById("check");
-// Checking answers on click
-
 const checkanswerswrap = document.getElementById("wrapper");
 // Wraps around button for display purposes
 
@@ -828,8 +825,12 @@ async function showCyclePopup() {
 // Creation of message ended in a point inside simspace
 function finishDragMessageVisual(event) {
     if((!ticking) && messagestate === 1) {
-        if(event.target.className === "slider-bone" || event.target.className === "event" || event.target.className === "check-label") {
-            if (fromMessage === event.target || fromMessage.contains(event.target)) {
+        console.log(event.target.className);
+        if(event.target.className === "slider-bone" || event.target.className === "event" || event.target.className === "check-label"
+            || event.target.className === "event-tip"
+        ) {
+            if (fromMessage === event.target || fromMessage.contains(event.target) 
+                    || fromMessage.querySelector(".event-tip") === event.target) {
                 messagespace.removeChild(currentMessage);
                 updateEventTimes();
                 currentMessage = null;
@@ -923,7 +924,6 @@ function createNode(genMode, defaultval=indefault) {
         const toadd4 = document.createElement("div");
         toadd4.className = "slider-bone";
         toadd4.dataset.process = node_len;
-        //toadd4.addEventListener("click", manageEventVisual);
         toadd3.appendChild(toadd4);
         // Adding straight line representing timeline
         
@@ -1234,7 +1234,6 @@ async function generator(event) {
         const e2 = mes.e2;
         all_at_once(sliderBones, simspace, e1, e2, event_offset, process_number);
         throttler.release();
-        //throttler.callFunction(all_at_once, sliderBones, simspace, e1, e2, event_offset, process_number);
     }
     updateEventTimes(true);
 }
@@ -1253,8 +1252,6 @@ function checkLogic() {
         const useranswer = tip.querySelector("input[type=number].enquirer");
         const correctanswer = tip.querySelector("span.answerer");
         const flipper = tip.querySelector("div.flipper");
-        console.log(useranswer.value);
-        console.log(correctanswer.textContent);
         if(parseInt(useranswer.value) === parseInt(correctanswer.textContent)) {
             correctanswer.classList.add("correct");
         }
