@@ -53,7 +53,7 @@
     - Click on check your answers once you are done filling up the test.
     - The test shows what you got right and the mistakes made.
 
-13. Challenging yousrself
+13. Challenging yourself
     - There are two ways to challenge yourself - you may either generate new parameters and try again.
     - Howeer, if you get a timeline entirely right, you have the option to take on the next difficulty level.
     - The gauge lights up when this is possible. Simply tap or click on it to increase the difficulty level

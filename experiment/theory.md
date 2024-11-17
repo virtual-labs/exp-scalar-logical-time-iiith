@@ -1,4 +1,4 @@
-## Introduction
+# Introduction
 
 Scalar logical clock is the simplest scheme to establish ordering of events in a distributed system. It was first described by Leslie Lamport in "Time, Clocks and the Ordering of events in a Distributed System", published 1978, and is also known as **Lamport's Clock**.
 
@@ -20,7 +20,7 @@ It is possible for two events *a* and *b* to have both $a \nrightarrow b$ and $b
 
 This also shows that this relation can give only a partial ordering of events on the system.
 
-## Logical Clock
+# Logical Clock
 
 A clock *C* for a process *P* is an incrementing counter assigning each value it takes to an event occurring in that process. This number may bear no relationship with the physical time at the process P. For a system of such clocks, they must satisfy the *clock condition*. If an event *a* happens before event *b*, then the time associated with *a* must be less than that assigned to *b*.  
     Formally,
@@ -28,16 +28,24 @@ A clock *C* for a process *P* is an incrementing counter assigning each value it
     This is called *monotonicity* and satisifes the consistency property of the clock.  
     Non-negative integers are used in logical clocks by convention.
 
-A single integer is used to keep track of time for scalar logical clock.
+Strong consistency is when the system of clocks satisfy:
+    $$a \rightarrow b \Leftrightarrow C(a) < C(b)$$
+
+## Scalar Logical Clock
+
+A single integer, $C_i$ is maintained by each process to keep track of time for scalar logical clock.
 
 ## Rules for Ordering
 
 1. Local Rule:
     Each process P<sub>i</sub> increments its clock C<sub>i</sub> between any two immediately following events. This increment is done before the first event in a process' timeline of events as well.
+    $$ C_i \Leftarrow C_i + d$$
 
 2. Global Rule:
     Each process P<sub>i</sub> sends the timestamp of the event associated with sending a message *m* along with the message itself.
     Each process P<sub>j</sub> receiving a message *m* increments its clock C<sub>j</sub> and sets its time to be greater than the timestamp in message *m*.
+    $$C_i \Leftarrow max(C_i, C_{msg})$$
+    $$C_i \Leftarrow C_i + d$$
 
 ## Total Ordering
 
