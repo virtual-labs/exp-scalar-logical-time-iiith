@@ -271,8 +271,14 @@ function updateEventTimes(testing = false) {
                 eventtip.parentNode.style.zIndex = String(events.length - i);
                 eventtip.addEventListener("click", (event) => {
                     event.stopPropagation();
-                    current_max_z++;
-                    eventtip.parentNode.style.zIndex = String(current_max_z);
+                    if(!ticking) {
+                        window.requestAnimationFrame((event) => {
+                            current_max_z++;
+                            eventtip.parentNode.style.zIndex = String(current_max_z);
+                            ticking = false;
+                        });
+                        ticking = true;    
+                    } 
                 }, true);
                 const dims = eventtip.getBoundingClientRect();
                 const dims2 = eventtip.parentNode.getBoundingClientRect();
