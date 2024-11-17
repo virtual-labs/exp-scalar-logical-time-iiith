@@ -1196,7 +1196,7 @@ async function generator(event) {
     console.log(event_padding);
     const event_offset = [];
     for(let i = 0; i < process_number; ++i) {
-        event_offset.push(40 + Math.random() * event_padding);
+        event_offset.push(event_padding / 2 + Math.random() * event_padding);
     }
     const message_set = new Set();
     let max_ticks = 1;
