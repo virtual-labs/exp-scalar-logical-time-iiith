@@ -1,1 +1,1 @@
-## Scalar Logical Clock
+# Scalar Logical Clock

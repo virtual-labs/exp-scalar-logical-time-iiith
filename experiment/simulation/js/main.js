@@ -1191,10 +1191,12 @@ async function generator(event) {
     const process_number = parseInt(document.getElementById("processors-gen").value);
     const event_number = parseInt(document.getElementById("events-gen").value);
     const messages_number = parseInt(document.getElementById("messages-gen").value);
-    const event_padding = 100;
+    const tell_width = tellspace.getBoundingClientRect().width;
+    const event_padding = tell_width / 14.2;
+    console.log(event_padding);
     const event_offset = [];
     for(let i = 0; i < process_number; ++i) {
-        event_offset.push(20 + Math.random() * 150);
+        event_offset.push(40 + Math.random() * event_padding);
     }
     const message_set = new Set();
     let max_ticks = 1;
@@ -1260,6 +1262,9 @@ function checkLogic() {
             wrong = true;
         }
         flipper.classList.add("answered");
+        const dims = tip.getBoundingClientRect();
+        const dims2 = tip.parentNode.getBoundingClientRect();
+        tip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
     }
     if(!wrong && test_progress < 2) {
         speed.classList.toggle("clickable");
