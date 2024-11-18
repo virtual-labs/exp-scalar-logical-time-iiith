@@ -2,3 +2,4 @@
 2. Time, Clocks and the Ordering of events in a Distributed System - Loyola University Chicago | Leslie Lamport
 3. [Clocks and Synchronization](https://ds.cs.luc.edu/clocks/clocks.html)
 4. Distributed Systems 3rd Edition | M. van Steen and A.S. Tanenbaum
+5. 5. Distributed Computing: Principles, Algorithms, and Systems | A.D. Kshemkalyani and M. Singhal

@@ -7,7 +7,7 @@ Scalar Logical Clock was first described by Leslie Lamport in "Time, Clocks and 
 
 #### Model of a Distributed System
 
-1. Process - It is a sequence of events. These events are defined based on application. The sequence has total ordering - event _a_ occurs before event _b_ if _a_ happens before _b_. Sending or receiving messages between processes are also event. 
+1. Process - It is a sequence of events. These events are defined based on application. The sequence has total ordering - event _a_ occurs before event _b_ if _a_ comes before _b_ in the sequence. Sending or receiving messages between processes are also events. 
 2. Distributed System - A collection of processes as defined before, which only communicate via messages.
 
 #### Happens Before relation
@@ -20,14 +20,12 @@ The 'happens before' relation, represented with $\rightarrow$ represents the fol
 
 It is possible for two events *a* and *b* to have both $a \nrightarrow b$ and $b \nrightarrow a$, where $\nrightarrow$ is the logical negative of $\rightarrow$. Such events are said to be *concurrent*.
 
-This also shows that this relation can give only a partial ordering of events on the system.
-
 ### Logical Clock
 
 A clock *C* for a process *P* is an incrementing counter assigning each value it takes to an event occurring in that process. This number may bear no relationship with the physical time at the process P. For a system of such clocks, they must satisfy the *clock condition*. If an event *a* happens before event *b*, then the time associated with *a* must be less than that assigned to *b*.  
     Formally,
     $$a \rightarrow b \Rightarrow C(a) < C(b)$$  
-    This is called *monotonicity* and satisifes the consistency property of the clock.  
+    This is called *monotonicity* and satisfies the consistency property of the clock.  
     Non-negative integers are used in logical clocks by convention.
 
 Strong consistency is when the system of clocks satisfy:
@@ -51,4 +49,4 @@ A single integer, $C_i$ is maintained by each process to keep track of time for 
 
 #### Total Ordering
 
-A total order can be established by breaking ties arbitrarily using parameters like process ID.
+Using the happens before relation can give only a partial ordering of events on the system with this clock. A total order can be established by breaking ties arbitrarily using parameters like process ID.
