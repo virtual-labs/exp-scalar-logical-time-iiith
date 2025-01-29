@@ -1,4 +1,4 @@
-## Steps to be followed for simulating and understanding scalar logical clocks
+<!-- ## Steps to be followed for simulating and understanding scalar logical clocks -->
 
 ### Experimental Steps
 
@@ -11,7 +11,7 @@
 3. After adding a process, the increment in that process' clock can be adjusted
     - A number entry is present on the extreme left.
     - The increment can be adjusted by entering a number between 1 and 5.
-    - The clock increment can also be adjusted with the small plus and minus buttons to the side. 
+    - The clock increment can also be adjusted with the small plus and minus buttons to the side.
 
 4. Use the Add/Delete buttons to change modes
     - Add button allows you to add events and messages
@@ -64,6 +64,9 @@
     - There are 3 difficulty levels - easy, medium and hard.
 
 15. Once you have tested yourself, you may return to simulate.
+
+<br>
+
 
 ### Observations
 

@@ -1,24 +1,25 @@
-## Introduction
-
 <div align="center">
 <img src="experiment/images/iiith-logo.png" width="25%">
 </div>
 
+
+### About the Experiment
+
 <b>Discipline | <b> Computer Science and Engineering
 :--|:--|
 <b> Lab | <b> Distributed Systems Virtual Lab
-<b> Experiment|     <b> Scalar Logical Time (02)
+<b> Experiment | <b> Scalar Logical time (02)
 
-### About the Experiment 
 
-Fill a brief description of this experiment here
+### Subject matter expert
 
 <b>Name of Developer | <b> Dr. Kishore Kothapalli
 :--|:--|
 <b> Institute | <b> IIIT Hyderabad
-<b> Email id|     <b> kkishore@iiit.ac.in
-<b> Department |  Computer Science and Engineering (Professor)
+<b> Email id | <b> kkishore@iiit.ac.in
+<b> Department | Computer Science and Engineering (Professor)
 <b> Website | [Faculty Page](https://faculty.iiit.ac.in/~kkishore/)
+
 
 ### Contributors List
 
