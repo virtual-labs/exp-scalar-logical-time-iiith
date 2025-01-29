@@ -1,0 +1,35 @@
+{
+  "version": 2.0,
+  "questions": [
+    {
+      "question": "<img src='./images/consistency.png'> <p>Here, the state of the distributed system is </p>",
+      "answers": {
+        "a": "Consistent",
+        "b": "Inconsistent"
+      },
+      "explanations": {
+        "a": "Incorrect. <img src='./images/consistency_explanation.png'>. The deadlocks are shown in this image",
+        "b": "Correct. <img src='./images/consistency_explanation.png'>. The deadlocks should be the ones found in the image"
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "<img src='./images/scalar_concurrent_label.png'> <p>Determine the times of the events A and B, assuming the processes 1 and 2 have a clock increment of 1 and processes 3 and 4 have a clock increment of 2, and also whether they are concurrent </p>",
+      "answers": {
+        "a": "3, 18, not concurrent",
+        "b": "3, 18, concurrent",
+        "c": "3, 13, not concurrent",
+        "d": "3, 13, concurrent"
+      },
+      "explanations": {
+        "a": "Incorrect. The events A and B do not eappear in each other's causality chains",
+        "b": "Correct. Processes 1 and 2 increment by 1 and processes 3 and 4 increment by 2. The events A and B do not eappear in each other's causality chains",
+        "c": "Incorrect. The clock increment for the processes 3 and 4 is 2. Also, the events A and B do not appear in each other's causality chains",
+        "d": "Incorrect. The clock increment for processes 3 and 4 is 2"
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    }
+  ]
+}
