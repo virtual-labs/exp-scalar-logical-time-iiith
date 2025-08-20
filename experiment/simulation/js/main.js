@@ -183,14 +183,6 @@ function mysteryAdjustment(curwidth, vw, max_events_offset) {
 // Function is used to adjust time
 function manageTime(commanded = false, commandedpos = 100) {
     if (!ticking) {
-        const scrollwidth = tellspace.scrollWidth;
-        const clientwidth = tellspace.clientWidth;
-        // Getting real width and displayed width in pixels
-
-        const vw = Math.min(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100, 10);
-
-        const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
-        // Getting current width
         if(commanded) {
             ticking = true;
             const a_observ = new ResizeObserver((entries) => {
@@ -213,26 +205,8 @@ function manageTime(commanded = false, commandedpos = 100) {
                 ticking = false;
             });
         }
-        else {
-            window.requestAnimationFrame(function() {
-                // If a scrollbar is required
-                if(scrollwidth > clientwidth) {
-                    if(scrollwidth - clientwidth <= tellspace.scrollLeft + 1) {
-                        // If the scrollbar is at max right, add some more space
-                        tellspace.scrollTo(scrollwidth - clientwidth - 4, 0);
-                        simspace.style.width = String(curwidth + 5) + 'px';
-                    }
-                    else if (tellspace.scrollLeft <= 1 && curwidth - 5 >= clientwidth && mysteryAdjustment(curwidth, vw, max_events_offset)) {
-                        // If the scrollbar is at max left delete some space
-                        // Don't let the space get too small or shrink beyond an event
-                        tellspace.scrollTo(4, 0);
-                        simspace.style.width = String(curwidth - 5) + 'px';
-                    }
-                }
-                ticking = false;
-            });
-            ticking = true;
-        }
+        // Removed auto-expansion logic - tellspace will use scrollbars instead
+        ticking = false;
     }
 }
 
@@ -421,8 +395,8 @@ function displayCausalGraph(process = -1, time = -1) {
         }
         const startx = 40;
         const starty = 40;
-        const gridx  = 250;
-        const gridy  = 100;
+        const gridx  = 350;
+        const gridy  = 140;
         const radius = 25;
         let maxx = displayspace.clientWidth + displayspace.scrollWidth;
         let maxy = displayspace.clientHeight + displayspace.scrollHeight;      
@@ -1184,13 +1158,12 @@ function prepareGeneratorInput(elements) {
 }
 
 function windowChange(event) {
-    const vw = Math.min(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100, 10);
-    const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
     displayCausalGraph(current_display_p, current_display_t);
-    if (tellspace.clientWidth > mysteryAdjustment(curwidth, vw, max_events_offset)) {
-        simspace.style.width = tellspace.clientWidth.toString() + 'px';
+    // Set a reasonable initial width if not set - use a larger initial canvas
+    if (!simspace.style.width || simspace.style.width === '0px') {
+        simspace.style.width = Math.max(tellspace.clientWidth * 2, 1200).toString() + 'px';
     }
-    // Try to take up all available screen width
+    // Getting position of simspace for use everywhere
     simpos = getPosition(simspace);
     // Getting position of simspace for use everywhere
     window.requestAnimationFrame(function() {
@@ -1235,10 +1208,10 @@ async function generator(event) {
     const event_number = parseInt(document.getElementById("events-gen").value);
     const messages_number = parseInt(document.getElementById("messages-gen").value);
     const tell_width = tellspace.getBoundingClientRect().width;
-    const event_padding = tell_width / 14.2;
+    const event_padding = tell_width / 11.0;  // Increased from 14.2 to 8.0 for more spacing
     const event_offset = [];
     for(let i = 0; i < process_number; ++i) {
-        event_offset.push(event_padding / 2 + Math.random() * event_padding);
+        event_offset.push(event_padding / 2 + Math.random() * event_padding * 1.5);  // Increased random offset multiplier
     }
     const message_set = new Set();
     let max_ticks = 1;
@@ -1271,8 +1244,18 @@ async function generator(event) {
     const all_at_once = function(sliderBones, simspace, e1, e2, event_offset, process_number) {
         const off1 = event_offset[e1.p] + e1.t;
         const off2 = event_offset[e2.p] + e2.t;
-        createMessageViusalGraphics(sliderBones[e1.p], simspace, event_offset[e1.p] + e1.t, true);
-        finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, event_offset[e2.p] + e2.t, true);
+        
+        // Ensure message arrow goes from left to right (earlier time to later time)
+        if (off1 <= off2) {
+            // e1 is earlier or same time, so e1 -> e2
+            createMessageViusalGraphics(sliderBones[e1.p], simspace, event_offset[e1.p] + e1.t, true);
+            finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, event_offset[e2.p] + e2.t, true);
+        } else {
+            // e2 is earlier, so e2 -> e1
+            createMessageViusalGraphics(sliderBones[e2.p], simspace, event_offset[e2.p] + e2.t, true);
+            finishDragMessageVisualGraphics(sliderBones[e1.p], simspace, event_offset[e1.p] + e1.t, true);
+        }
+        
         return (off1 > off2) ? off1 : off2;
     }
     for(const mes of outed.mes) {
@@ -1420,4 +1403,35 @@ check_answers.addEventListener("click", checkAnswers);
 
 speed.addEventListener("click", upgradeDifficulty);
 // Upgrade difficulty
+
+// Instructions Modal Handling
+const instructionsBtn = document.getElementById("instructionsBtn");
+const instructionsModal = document.getElementById("instructionsModal");
+const closeInstructions = document.getElementById("closeInstructions");
+
+function showInstructions() {
+    instructionsModal.style.display = "block";
+}
+
+function hideInstructions() {
+    instructionsModal.style.display = "none";
+}
+
+instructionsBtn.addEventListener("click", showInstructions);
+closeInstructions.addEventListener("click", hideInstructions);
+
+// Close modal when clicking outside of it
+instructionsModal.addEventListener("click", function(event) {
+    if (event.target === instructionsModal) {
+        hideInstructions();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape" && instructionsModal.style.display === "block") {
+        hideInstructions();
+    }
+});
+
 updateModes();
