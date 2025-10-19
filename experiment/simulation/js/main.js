@@ -269,6 +269,49 @@ function updateEventTimes(testing = false) {
                 eventtip.appendChild(toadd8);
                 eventtip.appendChild(toadd4);
                 eventtip.parentNode.style.zIndex = String(events.length - i);
+                
+                // Update the time value display
+                const timeValueContainer = eventtip.parentNode.querySelector('.time-value-container');
+                if (timeValueContainer) {
+                    const timeValueDisplay = timeValueContainer.querySelector('.time-value-display');
+                    const timeValueInput = timeValueContainer.querySelector('.time-value-input');
+                    
+                    if (testing) {
+                        // In test mode, show input field and hide display
+                        if (timeValueDisplay) timeValueDisplay.style.display = 'none';
+                        if (timeValueInput) {
+                            timeValueInput.style.display = 'block';
+                            timeValueInput.setAttribute('data-correct-answer', String(event_time.get(events[i])));
+                            // Store readonly state before modifying
+                            const wasReadOnly = timeValueInput.readOnly;
+                            console.log("updateEventTimes - Found input with value:", timeValueInput.value, "wasReadOnly:", wasReadOnly, "test_state:", test_state);
+                            
+                            // Reset input type to number for numeric input
+                            timeValueInput.type = "number";
+                            
+                            // Reset input styling and make it editable
+                            timeValueInput.readOnly = false;
+                            timeValueInput.style.backgroundColor = '';
+                            timeValueInput.style.color = '';
+                            
+                            // Only reset value if input was not readonly (not in answer-checking state)
+                            if (timeValueInput.value.includes(':') && !wasReadOnly) {
+                                console.log("updateEventTimes - CLEARING colon value:", timeValueInput.value);
+                                timeValueInput.value = '';
+                            } else if (timeValueInput.value.includes(':')) {
+                                console.log("updateEventTimes - PRESERVING colon value (was readonly):", timeValueInput.value);
+                            }
+                        }
+                    } else {
+                        // In normal mode, show display and hide input
+                        if (timeValueDisplay) {
+                            timeValueDisplay.style.display = 'block';
+                            timeValueDisplay.textContent = String(event_time.get(events[i]));
+                        }
+                        if (timeValueInput) timeValueInput.style.display = 'none';
+                    }
+                }
+                
                 eventtip.addEventListener("click", (event) => {
                     event.stopPropagation();
                     if(!ticking) {
@@ -553,6 +596,37 @@ function createEventVisual(target, offsetX, noupdate = false, testing = false) {
     // If this is the rightmost event so far, designate it
     toadd.dataset.myx = roundedX.toString();
     toadd.dataset.process = target.dataset.process;
+    
+    // Calculate event number within this process
+    const processId = parseInt(target.dataset.process);
+    const eventsInThisProcess = events.filter(e => e.p === processId).length;
+    const eventNumber = eventsInThisProcess + 1;
+    
+    // Create floating label with e_processid,nodenumber format
+    const floatingLabel = document.createElement("div");
+    floatingLabel.className = "floating-event-label";
+    floatingLabel.innerHTML = `e<sub>${processId + 1},${eventNumber}</sub>`;
+    
+    // Store the time value display element
+    const timeValueDisplay = document.createElement("div");
+    timeValueDisplay.className = "time-value-display";
+    timeValueDisplay.textContent = "0"; // Will be updated by updateEventTimes
+    
+    // Add input field for test mode (initially hidden)
+    const timeValueInput = document.createElement("input");
+    timeValueInput.type = "number";
+    timeValueInput.className = "time-value-input";
+    timeValueInput.style.display = "none";
+    timeValueInput.min = "1";
+    timeValueInput.max = "999";
+    timeValueInput.placeholder = "?";
+    
+    // Add both display and input to a container
+    const timeValueContainer = document.createElement("div");
+    timeValueContainer.className = "time-value-container";
+    timeValueContainer.appendChild(timeValueDisplay);
+    timeValueContainer.appendChild(timeValueInput);
+    
     // Saving identifier for use in deletion
     const ID_FORMAT = toadd.dataset.process.toString() + '-' + toadd.dataset.myx.toString();
     // Common identifier for detecting clicks 
@@ -583,9 +657,12 @@ function createEventVisual(target, offsetX, noupdate = false, testing = false) {
     toadd5.className = "event-tip";
     toadd5.id = ID_FORMAT + '-tip';
     // Creating pop up for displaying times
+    
     toadd.appendChild(toadd3);
     toadd.appendChild(toadd4);
     toadd.appendChild(toadd5);
+    toadd.appendChild(floatingLabel);
+    toadd.appendChild(timeValueContainer);
     // Adding elements for displaying event time on click
     target.appendChild(toadd);
     // Adding element
@@ -595,8 +672,40 @@ function createEventVisual(target, offsetX, noupdate = false, testing = false) {
     if(!noupdate) {
         updateEventTimes();
         displayCausalGraph(current_display_p, current_display_t);
+        // Update all event labels to maintain correct numbering
+        updateAllEventLabels();
     }
     return [toadd, toadd2];
+}
+
+// Function to update all event labels to maintain correct numbering
+function updateAllEventLabels() {
+    // Group events by process
+    const eventsByProcess = {};
+    events.forEach(event => {
+        if (!eventsByProcess[event.p]) {
+            eventsByProcess[event.p] = [];
+        }
+        eventsByProcess[event.p].push(event);
+    });
+    
+    // Sort events within each process by time
+    Object.keys(eventsByProcess).forEach(processId => {
+        eventsByProcess[processId].sort((a, b) => a.t - b.t);
+    });
+    
+    // Update labels in DOM
+    Object.keys(eventsByProcess).forEach(processId => {
+        eventsByProcess[processId].forEach((event, index) => {
+            const eventElement = document.querySelector(`[data-process="${processId}"][data-myx="${event.t}"]`);
+            if (eventElement) {
+                const floatingLabel = eventElement.querySelector('.floating-event-label');
+                if (floatingLabel) {
+                    floatingLabel.innerHTML = `e<sub>${parseInt(processId) + 1},${index + 1}</sub>`;
+                }
+            }
+        });
+    });
 }
 
 //Deleting an event
@@ -631,6 +740,7 @@ function deleteEventVisual(target, currentTarget, noupdate) {
     currentTarget.removeChild(target);
     if(!noupdate) {
         updateEventTimes();
+        updateAllEventLabels(); // Update event labels after deletion
         if(intx === current_display_t && pintx === current_display_p) {
             displayCausalGraph();
         }
@@ -924,6 +1034,16 @@ function createNode(genMode, defaultval=indefault) {
         const node_len = nodes.length;
         // The index of this process
 
+        // Add process label (P1, P2, etc.)
+        const processLabel = document.createElement("div");
+        processLabel.className = "process-label";
+        processLabel.textContent = `P${node_len + 1}`;
+        
+        // Add d value display
+        const dValueDisplay = document.createElement("div");
+        dValueDisplay.className = "d-value-display";
+        dValueDisplay.textContent = "d = ";
+
         const toadd2 = document.createElement("input");
         toadd2.type = "number";
         toadd2.className = "increment";
@@ -934,6 +1054,12 @@ function createNode(genMode, defaultval=indefault) {
         // Text boxes for setting increment in time step at each processor
         // Change CSS values for class increment should the max increase beyond some digits
         
+        // Update d value display when input changes
+        toadd2.addEventListener('input', function() {
+            dValueDisplay.textContent = "d = ";
+            ticks[node_len] = parseInt(toadd2.value);
+        });
+        
         const toadd3 = document.createElement("div");
         toadd3.className = "slider";
         // Representing timeline of each node
@@ -943,6 +1069,10 @@ function createNode(genMode, defaultval=indefault) {
         toadd4.dataset.process = node_len;
         toadd3.appendChild(toadd4);
         // Adding straight line representing timeline
+        
+        // Add process label and d value display to container
+        toadd.appendChild(processLabel);
+        toadd.appendChild(dValueDisplay);
         
         toadd.appendChild(toadd2);
         // Adding input to timeline
@@ -1277,7 +1407,8 @@ async function generator(event) {
 }
 
 function checkAnswers(event) {
-    if(event.button <= 1 && test_state === 1 && !gen_tick) {
+    console.log("Check answers clicked, test_state:", test_state, "gen_tick:", gen_tick);
+    if(test_state === 1 && !gen_tick) {
         gen_tick = true;
         window.requestAnimationFrame((tim) => {
             checkLogic();
@@ -1288,27 +1419,96 @@ function checkAnswers(event) {
 }
 
 function checkLogic() {
-    const tips = document.querySelectorAll("span.event-tip");
+    console.log("=== CHECK LOGIC STARTED ===");
+    console.log("Test state:", test_state);
+    
+    // Add debugging to all input elements to track value changes
+    const allInputs = document.querySelectorAll('.time-value-input');
+    allInputs.forEach((input, index) => {
+        // Create a custom setter to track changes
+        const originalValue = input.value;
+        const originalDescriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+        
+        Object.defineProperty(input, 'value', {
+            get() {
+                return originalDescriptor.get.call(this);
+            },
+            set(newValue) {
+                console.log(`INPUT ${index} VALUE CHANGE:`, originalDescriptor.get.call(this), ' → ', newValue, 'Stack:', new Error().stack.split('\n')[2]);
+                return originalDescriptor.set.call(this, newValue);
+            }
+        });
+    });
+    
+    const timeValueContainers = document.querySelectorAll(".time-value-container");
+    console.log("Found containers:", timeValueContainers.length);
     let wrong = false;
-    for(const tip of tips) {
-        const useranswer = tip.querySelector("input[type=number].enquirer");
-        const correctanswer = tip.querySelector("span.answerer");
-        const flipper = tip.querySelector("div.flipper");
-        if(parseInt(useranswer.value) === parseInt(correctanswer.textContent)) {
-            correctanswer.classList.add("correct");
+    
+    for(const container of timeValueContainers) {
+        const input = container.querySelector(".time-value-input");
+        
+        if (!input) {
+            console.log("No input found in container");
+            continue;
         }
-        else {
-            correctanswer.classList.add("wrong");
+        
+        // Check if input is visible (in test mode)
+        if (input.style.display === 'none') {
+            console.log("Input is hidden, skipping");
+            continue;
+        }
+        
+        const correctAnswer = input.getAttribute('data-correct-answer');
+        const userAnswer = input.value;
+        
+        console.log("BEFORE UPDATE - User:", userAnswer, "Correct:", correctAnswer, "ReadOnly:", input.readOnly);
+        
+        // Remove previous classes
+        container.classList.remove("correct", "wrong");
+        
+        // Change input type to text to allow colon format
+        input.type = "text";
+        
+        // Update input value to show user_input:correct_answer format
+        if (userAnswer && userAnswer.trim() !== '') {
+            input.value = `${userAnswer}:${correctAnswer}`;
+            console.log("AFTER UPDATE - Set input value to:", input.value);
+        } else {
+            input.value = `:${correctAnswer}`;
+            console.log("AFTER UPDATE - Set input value to (empty user input):", input.value);
+        }
+        
+        // Make input readonly after checking
+        input.readOnly = true;
+        console.log("Set readonly to true");
+        
+        if(userAnswer && userAnswer.trim() !== '' && parseInt(userAnswer) === parseInt(correctAnswer)) {
+            container.classList.add("correct");
+            input.style.setProperty('background-color', 'rgba(34, 197, 94, 0.9)', 'important');
+            input.style.setProperty('color', 'white', 'important');
+            console.log("Answer correct - applied green styling");
+        } else {
+            container.classList.add("wrong");
+            input.style.setProperty('background-color', 'rgba(239, 68, 68, 0.9)', 'important');
+            input.style.setProperty('color', 'white', 'important');
             wrong = true;
+            console.log("Answer wrong - applied red styling");
         }
-        flipper.classList.add("answered");
-        const dims = tip.getBoundingClientRect();
-        const dims2 = tip.parentNode.getBoundingClientRect();
-        tip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
+        
+        // Double check the value is still there
+        console.log("FINAL CHECK - Input value after all changes:", input.value, "ReadOnly:", input.readOnly);
     }
+    
+    console.log("=== BEFORE REFLOW ===");
+    // Force a reflow to ensure styles are applied
+    document.body.offsetHeight;
+    console.log("=== AFTER REFLOW ===");
+    
     if(!wrong && test_progress < 2) {
         speed.classList.toggle("clickable");
     }
+    
+    console.log("=== CHECK LOGIC COMPLETED ===");
 }
 
 function upgradeDifficulty(event) {
