@@ -52,6 +52,23 @@
       "correctAnswer": "d",
       "difficulty": "beginner"
     },
+        {
+      "question": "In a distributed system with three processes P1, P2, and P3, if event a occurs on P1 at logical time 5 and event b occurs on P2 at logical time 7, what can we conclude?",
+      "answers": {
+        "a": "Event a definitely happened before event b",
+        "b": "Event b definitely happened before event a",
+        "c": "Events a and b are concurrent",
+        "d": "We cannot determine the relationship without knowing the message history"
+      },
+      "explanations": {
+        "a": "Incorrect. Lower timestamps don't guarantee the happens-before relation without causal connection.",
+        "b": "Incorrect. Higher timestamps alone don't establish the happens-before relation.",
+        "c": "Incorrect. We cannot conclude concurrency from timestamps alone.",
+        "d": "Correct. Scalar logical clock values alone don't determine causality; we need to know if messages were exchanged."
+      },
+      "correctAnswer": "d",
+      "difficulty": "beginner"
+    },
     {
       "question": "Scalar logical clocks can be used to ",
       "answers": {
@@ -104,6 +121,23 @@
       "difficulty": "intermediate"
     },
     {
+      "question": "If process P1 has clock value 10 and receives a message with timestamp 8, what will be P1's clock value after processing the receive event?",
+      "answers": {
+        "a": "8",
+        "b": "9",
+        "c": "10",
+        "d": "11"
+      },
+      "explanations": {
+        "a": "Incorrect. The clock cannot go backward.",
+        "b": "Incorrect. This would make the clock go backward.",
+        "c": "Incorrect. The clock must be incremented after the receive event.",
+        "d": "Correct. Clock becomes max(10, 8) + 1 = 11."
+      },
+      "correctAnswer": "d",
+      "difficulty": "intermediate"
+    },
+    {
       "question": "What is the clock condition that logical clocks must satisfy?",
       "answers": {
         "a": "If a → b, then C(a) > C(b)",
@@ -150,6 +184,23 @@
         "b": "Correct. The monotonicity property ensures transitivity is preserved in timestamp ordering.",
         "c": "Incorrect. Physical clock synchronization is not used in logical clocks.",
         "d": "Incorrect. Process IDs are used for total ordering, not transitivity."
+      },
+      "correctAnswer": "b",
+      "difficulty": "advanced"
+    },
+    {
+      "question": "Which limitation of scalar logical clocks is addressed by vector clocks?",
+      "answers": {
+        "a": "Scalar clocks cannot handle message passing",
+        "b": "Scalar clocks cannot determine if two events are concurrent by comparing their timestamps",
+        "c": "Scalar clocks cannot maintain causality",
+        "d": "Scalar clocks cannot work in asynchronous systems"
+      },
+      "explanations": {
+        "a": "Incorrect. Scalar clocks do handle message passing correctly.",
+        "b": "Correct. Vector clocks provide strong consistency: C(a) < C(b) if and only if a → b, allowing concurrency detection.",
+        "c": "Incorrect. Scalar clocks do maintain causality (if a → b, then C(a) < C(b)).",
+        "d": "Incorrect. Scalar clocks are designed for asynchronous systems."
       },
       "correctAnswer": "b",
       "difficulty": "advanced"
