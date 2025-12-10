@@ -1,0 +1,209 @@
+{
+  "version": 2.0,
+  "questions": [
+    {
+      "question": "What is the primary purpose of scalar logical clocks in distributed systems?",
+      "answers": {
+        "a": "To synchronize physical time across all processes",
+        "b": "To order events in a distributed system without relying on physical time",
+        "c": "To measure network latency between processes",
+        "d": "To encrypt messages between processes"
+      },
+      "explanations": {
+        "a": "Incorrect. Logical clocks avoid relying on physical time synchronization.",
+        "b": "Correct. Scalar logical clocks provide event ordering without physical time dependency.",
+        "c": "Incorrect. Logical clocks are not used for measuring network latency.",
+        "d": "Incorrect. Logical clocks are not used for encryption purposes."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "What does the 'happens before' relation (→) represent in distributed systems?",
+      "answers": {
+        "a": "Physical time ordering between events",
+        "b": "Causal ordering between events across processes",
+        "c": "Random ordering of events",
+        "d": "Alphabetical ordering of process names"
+      },
+      "explanations": {
+        "a": "Incorrect. The happens before relation is about causality, not physical time.",
+        "b": "Correct. The happens before relation represents causal ordering between events.",
+        "c": "Incorrect. The relation is deterministic based on causality rules.",
+        "d": "Incorrect. Process names are not relevant to the happens before relation."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "When a process sends a message, it ",
+      "answers": {
+        "a": "increments its clock before the send event and sends a message with the time before the increment",
+        "b": "increments its clock after the send event and sends a message with the time after the increment",
+        "c": "increments its clock after the send event and sends a message with the time before the increment",
+        "d": "increments its clock before the send event and sends a message with the time after the increment"
+      },
+      "explanations": {
+        "a": "Incorrect. Messages are always sent with the current logical time at a process",
+        "b": "Incorrect. Logical clocks are incremented before the event and the message carry the current logical time at the process",
+        "c": "Incorrect. Logical clocks are incremented before the event",
+        "d": "Correct. Logical clocks are incremented before the event and the message carry this incremented time."
+      },
+      "correctAnswer": "d",
+      "difficulty": "beginner"
+    },
+        {
+      "question": "In a distributed system with three processes P1, P2, and P3, if event a occurs on P1 at logical time 5 and event b occurs on P2 at logical time 7, what can we conclude?",
+      "answers": {
+        "a": "Event a definitely happened before event b",
+        "b": "Event b definitely happened before event a",
+        "c": "Events a and b are concurrent",
+        "d": "We cannot determine the relationship without knowing the message history"
+      },
+      "explanations": {
+        "a": "Incorrect. Lower timestamps don't guarantee the happens-before relation without causal connection.",
+        "b": "Incorrect. Higher timestamps alone don't establish the happens-before relation.",
+        "c": "Incorrect. We cannot conclude concurrency from timestamps alone.",
+        "d": "Correct. Scalar logical clock values alone don't determine causality; we need to know if messages were exchanged."
+      },
+      "correctAnswer": "d",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "Scalar logical clocks can be used to ",
+      "answers": {
+        "a": "Totally order events by themselves",
+        "b": "Can only establish Partial Ordering",
+        "c": "Can be used along with arbitrary tiebreaks to establish total ordering",
+        "d": "Can be used along with arbitrary tiebreaks to establish partial ordering"
+      },
+      "explanations": {
+        "a": "Incorrect. It is possible for two events to have no causal connection to the other.",
+        "b": "Incorrect. It is possible for concurrent events to be ordered by another metric to establish total order",
+        "c": "Correct. While a total ordering is possible, this does not imply causal relationhip",
+        "d": "Incorrect. It is possible to get a partial ordering with just a scalar logical clock"
+      },
+      "correctAnswer": "c",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "What happens when a process receives a message in scalar logical clock systems?",
+      "answers": {
+        "a": "It only increments its own clock by 1",
+        "b": "It sets its clock to the message timestamp",
+        "c": "It sets its clock to max(own_clock, message_timestamp) and then increments",
+        "d": "It ignores the message timestamp"
+      },
+      "explanations": {
+        "a": "Incorrect. The process must also consider the message timestamp.",
+        "b": "Incorrect. The process must ensure its clock doesn't go backward.",
+        "c": "Correct. The global rule requires taking the maximum and then incrementing.",
+        "d": "Incorrect. Message timestamps are crucial for maintaining causal ordering."
+      },
+      "correctAnswer": "c",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "When are two events considered concurrent in scalar logical time?",
+      "answers": {
+        "a": "When they occur at the same physical time",
+        "b": "When neither event happens before the other (a ↛ b and b ↛ a)",
+        "c": "When they have the same logical timestamp",
+        "d": "When they occur on the same process"
+      },
+      "explanations": {
+        "a": "Incorrect. Concurrency is not about physical time in logical clocks.",
+        "b": "Correct. Events are concurrent when neither causally precedes the other.",
+        "c": "Incorrect. Same timestamps don't necessarily mean concurrency.",
+        "d": "Incorrect. Events on the same process are totally ordered."
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "If process P1 has clock value 10 and receives a message with timestamp 8, what will be P1's clock value after processing the receive event?",
+      "answers": {
+        "a": "8",
+        "b": "9",
+        "c": "10",
+        "d": "11"
+      },
+      "explanations": {
+        "a": "Incorrect. The clock cannot go backward.",
+        "b": "Incorrect. This would make the clock go backward.",
+        "c": "Incorrect. The clock must be incremented after the receive event.",
+        "d": "Correct. Clock becomes max(10, 8) + 1 = 11."
+      },
+      "correctAnswer": "d",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "What is the clock condition that logical clocks must satisfy?",
+      "answers": {
+        "a": "If a → b, then C(a) > C(b)",
+        "b": "If a → b, then C(a) = C(b)",
+        "c": "If a → b, then C(a) < C(b)",
+        "d": "If a → b, then C(a) ≥ C(b)"
+      },
+      "explanations": {
+        "a": "Incorrect. This would violate causality ordering.",
+        "b": "Incorrect. Equal timestamps would not preserve ordering.",
+        "c": "Correct. The clock condition ensures monotonicity: causally earlier events have smaller timestamps.",
+        "d": "Incorrect. Equality would not preserve strict ordering."
+      },
+      "correctAnswer": "c",
+      "difficulty": "advanced"
+    },
+    {
+      "question": "What is strong consistency in logical clock systems?",
+      "answers": {
+        "a": "a → b if and only if C(a) < C(b)",
+        "b": "a → b implies C(a) < C(b) only",
+        "c": "All processes have the same clock value at any given time",
+        "d": "Physical and logical time are synchronized"
+      },
+      "explanations": {
+        "a": "Correct. Strong consistency means the happens-before relation is equivalent to timestamp ordering.",
+        "b": "Incorrect. This describes basic consistency, not strong consistency.",
+        "c": "Incorrect. Processes maintain independent clocks that can have different values.",
+        "d": "Incorrect. Logical clocks are independent of physical time."
+      },
+      "correctAnswer": "a",
+      "difficulty": "advanced"
+    },
+    {
+      "question": "How do scalar logical clocks handle the transitivity property of the happens-before relation?",
+      "answers": {
+        "a": "By using vector timestamps",
+        "b": "By ensuring that if a → b and b → c, then C(a) < C(b) < C(c)",
+        "c": "By synchronizing physical clocks",
+        "d": "By using process IDs as tie-breakers"
+      },
+      "explanations": {
+        "a": "Incorrect. Vector clocks are a different mechanism.",
+        "b": "Correct. The monotonicity property ensures transitivity is preserved in timestamp ordering.",
+        "c": "Incorrect. Physical clock synchronization is not used in logical clocks.",
+        "d": "Incorrect. Process IDs are used for total ordering, not transitivity."
+      },
+      "correctAnswer": "b",
+      "difficulty": "advanced"
+    },
+    {
+      "question": "Which limitation of scalar logical clocks is addressed by vector clocks?",
+      "answers": {
+        "a": "Scalar clocks cannot handle message passing",
+        "b": "Scalar clocks cannot determine if two events are concurrent by comparing their timestamps",
+        "c": "Scalar clocks cannot maintain causality",
+        "d": "Scalar clocks cannot work in asynchronous systems"
+      },
+      "explanations": {
+        "a": "Incorrect. Scalar clocks do handle message passing correctly.",
+        "b": "Correct. Vector clocks provide strong consistency: C(a) < C(b) if and only if a → b, allowing concurrency detection.",
+        "c": "Incorrect. Scalar clocks do maintain causality (if a → b, then C(a) < C(b)).",
+        "d": "Incorrect. Scalar clocks are designed for asynchronous systems."
+      },
+      "correctAnswer": "b",
+      "difficulty": "advanced"
+    }
+  ]
+}
