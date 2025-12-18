@@ -71,7 +71,11 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
     // Used to map a from event into message queue
     const messageQ = new Map();
     // Holds messages that have been sent, but not yet received
-    const processes = new Array(inTicks.length).fill(0);
+    const processes = new Array(inTicks.length);
+    // Initialize processes with d values (inTicks values) as starting values for scalar logical clock
+    for (let p = 0; p < inTicks.length; p++) {
+        processes[p] = inTicks[p] - 1; // Start one less so first event gets d value
+    }
     // Holds current time at every process
     const is_stopped = new Array(inTicks.length).fill(-1);
     // If value of index < 0 => process is running
@@ -102,7 +106,7 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
         const currentEvent = inEvents[eindx[i]];
         if (is_stopped[currentEvent.p] < 0 || messageQ.has(currentEvent)) {
             if (is_stopped[currentEvent.p] < 0) {
-                processes[currentEvent.p] += inTicks[currentEvent.p];        
+                processes[currentEvent.p] += 1; // Increment by 1 for scalar logical clock        
             }
             if (switchboard.has(currentEvent)) {
                 // Checking if from event
@@ -114,9 +118,9 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
             else if(shouldWait.has(currentEvent)) {
                 if(messageQ.has(currentEvent) && (is_stopped[currentEvent.p] < 0 || is_stopped[currentEvent.p] === eindx[i])) {
                     processes[currentEvent.p] = Math.max(
-                        processes[currentEvent.p] - inTicks[currentEvent.p], 
+                        processes[currentEvent.p] - 1, // Use 1 instead of inTicks for scalar logical clock
                         messageQ.get(currentEvent)
-                    ) + inTicks[currentEvent.p];
+                    ) + 1; // Increment by 1 for scalar logical clock
                     // Message has been received and time updated
                     causalChain.set(inEvents[eindx[i]], [last_event[currentEvent.p], shouldWait.get(currentEvent)]);
                     // Causal links between events in case of messages
