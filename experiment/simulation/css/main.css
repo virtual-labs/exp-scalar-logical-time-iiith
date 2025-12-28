@@ -6,7 +6,8 @@ body {
     color: #1a202c;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* Main Container with Blue-Purple Background */
@@ -341,18 +342,6 @@ h3.cp {
     }
 }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-    .instructions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .instructions-modal-content {
-        margin: 5% auto;
-        width: 95%;
-    }
-}
-
 /* Override old modal styles to ensure new styles take precedence */
 .modal {
     position: fixed;
@@ -521,51 +510,51 @@ h3.cp {
 
 .floating-event-label {
     position: absolute;
-    top: -40px;
+    top: -28px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(59, 130, 246, 0.98);
     color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 1.4rem;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 0.75rem;
     font-weight: 600;
     line-height: 1.2;
     height: auto;
-    min-height: 35px;
+    min-height: 20px;
     white-space: nowrap;
     z-index: 10;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
     pointer-events: none;
-    min-width: 50px;
+    min-width: 32px;
     text-align: center;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .floating-event-label sub {
-    font-size: 0.95em;
+    font-size: 0.85em;
     vertical-align: sub;
 }
 
 .time-value-display {
     position: absolute;
-    top: -40px;
-    right: -60px;
+    top: -28px;
+    right: -38px;
     transform: none;
     background: rgba(34, 197, 94, 0.9);
     color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 1.4rem;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
     z-index: 10;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
     pointer-events: none;
-    min-width: 50px;
+    min-width: 28px;
     text-align: center;
 }
 
@@ -575,22 +564,22 @@ h3.cp {
 
 .time-value-input {
     position: absolute;
-    top: -40px;
-    right: -60px;
+    top: -28px;
+    right: -38px;
     transform: none;
     background: rgba(255, 255, 255, 0.95);
     color: #2d3748;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 1.4rem;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
     z-index: 15;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-    width: 74px;
-    max-width: 74px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    width: 38px;
+    max-width: 38px;
     text-align: center;
-    border: 2px solid rgba(34, 197, 94, 0.8);
+    border: 1px solid rgba(34, 197, 94, 0.8);
     outline: none;
 }
 
@@ -612,26 +601,26 @@ h3.cp {
 
 .floating-event-label {
     position: absolute;
-    top: -40px;
-    left: -60px;
+    top: -28px;
+    left: -38px;
     transform: none;
     background: rgba(59, 130, 246, 0.98);
     color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 1.4rem;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 0.75rem;
     font-weight: 600;
     line-height: 1.2;
     height: auto;
-    min-height: 35px;
+    min-height: 20px;
     white-space: nowrap;
     z-index: 5;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
     pointer-events: none;
-    width: 74px;
-    max-width: 74px;
+    width: 38px;
+    max-width: 38px;
     text-align: center;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1670,17 +1659,23 @@ input[type=number].enquirer:focus {
 
 
 /* Responsive Design */
+
+/* Large tablets and small desktops */
 @media (max-width: 1200px) {
-    .content-container {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
+    .main-container {
+        flex-direction: column;
+        height: auto;
+        max-height: none;
+        overflow-y: auto;
+        padding: 15px;
         gap: 15px;
-        max-width: 100%;
     }
     
     .left-container {
-        height: auto;
-        max-height: none;
+        flex: 0 0 auto;
+        min-width: 100%;
+        max-width: 100%;
+        width: 100%;
     }
     
     .control-panel {
@@ -1688,38 +1683,788 @@ input[type=number].enquirer:focus {
         flex-direction: row;
         flex-wrap: wrap;
         overflow: visible;
-        gap: 10px;
+        gap: 15px;
+        padding: 15px;
     }
     
     .control-panel > * {
-        flex: 1;
-        min-width: 200px;
+        flex: 1 1 280px;
+        min-width: 280px;
+    }
+    
+    .control-panel .wrapperalike,
+    .control-panel #testcontrols,
+    .control-panel #antiwrapper {
+        flex: 1 1 280px;
+    }
+    
+    .right-container {
+        width: 100%;
+        min-height: auto;
+    }
+    
+    .tellspace-container {
+        height: 50vh;
+        max-height: 50vh;
+        min-height: 300px;
+    }
+    
+    .wrapper2-container {
+        height: 35vh;
+        max-height: 35vh;
+        min-height: 250px;
+    }
+    
+    .right-container:has(#wrapper2.hidden) .tellspace-container {
+        height: 60vh;
+        min-height: 400px;
+    }
+    
+    h3.cp {
+        font-size: 1.1rem;
+    }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+    body {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .main-container {
+        width: 98vw;
+        max-width: 98vw;
+        margin: 5px auto;
+        padding: 12px;
+        border-radius: 15px;
+    }
+    
+    .control-panel > * {
+        flex: 1 1 100%;
+        min-width: 100%;
+    }
+    
+    .control-panel .wrapperalike,
+    .control-panel #testcontrols,
+    .control-panel #antiwrapper {
+        flex: 1 1 100%;
+    }
+    
+    .btn, button {
+        font-size: 1.2rem !important;
+        padding: 10px 12px !important;
+        min-height: 45px !important;
+    }
+    
+    #plus, #minus {
+        min-width: 45px;
+        height: 45px;
+        font-size: 1.4rem !important;
     }
     
     .tellspace-container {
         height: 45vh;
+        max-height: 45vh;
+        min-height: 280px;
     }
     
     .wrapper2-container {
         height: 30vh;
+        max-height: 30vh;
+        min-height: 200px;
+    }
+    
+    .floating-event-label,
+    .time-value-display,
+    .time-value-input {
+        font-size: 0.7rem;
+        padding: 2px 5px;
+        min-width: 32px;
+        min-height: 18px;
+        top: -24px;
+    }
+    
+    .floating-event-label {
+        left: -34px;
+        width: 34px;
+        max-width: 34px;
+    }
+    
+    .time-value-input,
+    .time-value-display {
+        right: -34px;
+        width: 34px;
+        max-width: 34px;
+    }
+    
+    .process-label {
+        font-size: 1rem;
+        padding: 4px 6px;
+        min-width: 30px;
+    }
+    
+    .increment {
+        width: max(min(4vw, 2.5em), 40px);
+        height: max(min(4vh, 1.3em), 22px);
+        font-size: 1rem;
+    }
+    
+    #testspace {
+        flex-direction: column;
+    }
+    
+    .difficulty {
+        padding: 15px;
+    }
+    
+    .gauge {
+        width: 120px;
+        height: 60px;
+    }
+    
+    .needle {
+        width: 62px;
+        height: 6px;
     }
 }
 
+/* Small tablets and large phones */
 @media (max-width: 768px) {
-    .mobile-warning {
-        display: block;
+    body {
+        padding: 5px;
+        overflow-y: auto;
     }
     
     .main-container {
-        display: none !important;
+        width: 100vw;
+        max-width: 100vw;
+        margin: 0;
+        padding: 10px;
+        border-radius: 10px;
+        gap: 10px;
     }
     
-    body {
+    .left-container {
+        border-radius: 10px;
+    }
+    
+    .control-panel {
         padding: 10px;
+        gap: 10px;
+    }
+    
+    h3.cp {
+        font-size: 1rem;
+        padding: 5px;
+    }
+    
+    .btn, button {
+        font-size: 1rem !important;
+        padding: 8px 10px !important;
+        min-height: 40px !important;
+        letter-spacing: 0.5px !important;
+    }
+    
+    #plus, #minus {
+        min-width: 40px;
+        height: 40px;
+        font-size: 1.2rem !important;
+    }
+    
+    .tellspace-container {
+        border-radius: 10px;
+        height: 40vh;
+        max-height: 40vh;
+        min-height: 250px;
+    }
+    
+    .wrapper2-container {
+        border-radius: 10px;
+        height: 28vh;
+        max-height: 28vh;
+        min-height: 180px;
+    }
+    
+    .right-container:has(#wrapper2.hidden) .tellspace-container {
+        height: 55vh;
+        min-height: 350px;
+    }
+    
+    #tellspace {
+        padding: 10px;
+    }
+    
+    .slider-container {
+        padding: 8px;
+        margin: 6px;
+        flex-wrap: nowrap;
+        min-width: 600px;
+    }
+    
+    .floating-event-label,
+    .time-value-display,
+    .time-value-input {
+        font-size: 0.65rem;
+        padding: 2px 4px;
+        min-width: 28px;
+        min-height: 16px;
+        top: -22px;
+        border-radius: 4px;
+    }
+    
+    .floating-event-label {
+        left: -30px;
+        width: 30px;
+        max-width: 30px;
+    }
+    
+    .time-value-input,
+    .time-value-display {
+        right: -30px;
+        width: 30px;
+        max-width: 30px;
+    }
+    
+    .process-label {
+        font-size: 0.9rem;
+        padding: 3px 5px;
+        min-width: 28px;
+        margin-right: 6px;
+    }
+    
+    .increment {
+        width: 35px;
+        height: 20px;
+        font-size: 0.9rem;
+        margin-right: 6px;
+    }
+    
+    .event {
+        height: 12px;
+        width: 12px;
+        bottom: -5px;
+    }
+    
+    .event.to {
+        height: 8px;
+        width: 8px;
+    }
+    
+    .difficulty {
+        padding: 10px;
+    }
+    
+    .gauge {
+        width: 100px;
+        height: 50px;
+    }
+    
+    .gauge-center .label {
+        font-size: 0.9em;
+        margin-top: 0.8em;
+    }
+    
+    .needle {
+        width: 52px;
+        height: 5px;
+    }
+    
+    .slice-colors .st {
+        border-top-width: 50px;
+        border-left-width: 50px;
+        border-right-width: 50px;
+    }
+    
+    #generatespace {
+        margin-top: 15px;
+    }
+    
+    .header-border {
+        padding: 10px;
+    }
+    
+    .aparam {
+        padding: 8px;
+    }
+    
+    #generatespace h4 {
+        font-size: 0.75rem;
+    }
+    
+    #ordergenerate {
+        font-size: 1.1rem !important;
+        padding: 10px 12px !important;
+        min-height: 45px !important;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .input-number {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+    
+    .input-number-decrement,
+    .input-number-increment {
+        width: 22px;
+        height: 30px;
+        line-height: 30px;
+        font-size: 0.8rem;
+    }
+    
+    /* Instructions Modal responsive */
+    .instructions-modal-content {
+        margin: 2% auto;
+        width: 98%;
+        max-height: 95vh;
+        border-radius: 15px;
+    }
+    
+    .modal-header {
+        padding: 16px 50px 16px 20px;
+    }
+    
+    .header-text h2 {
+        font-size: 1.2rem;
+    }
+    
+    .header-text p {
+        font-size: 0.85rem;
+    }
+    
+    .header-icon {
+        padding: 8px;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .instructions-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .instruction-card {
+        padding: 15px;
+    }
+    
+    .instruction-card .instruction-title {
+        font-size: 1.2rem;
+    }
+    
+    .instruction-card .instruction-list li {
+        font-size: 0.95rem;
+        padding: 6px 0;
     }
 }
 
+/* Mobile phones */
+@media (max-width: 576px) {
+    body {
+        padding: 0;
+    }
+    
+    .main-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 8px;
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    
+    .left-container {
+        border-radius: 8px;
+    }
+    
+    .control-panel {
+        padding: 8px;
+        gap: 8px;
+    }
+    
+    .control-panel .wrapperalike,
+    .control-panel #testcontrols,
+    .control-panel #antiwrapper {
+        padding: 10px;
+        border-radius: 8px;
+    }
+    
+    h3.cp {
+        font-size: 0.9rem;
+        gap: 5px;
+    }
+    
+    .btn, button {
+        font-size: 0.9rem !important;
+        padding: 8px !important;
+        min-height: 38px !important;
+        border-radius: 8px !important;
+        margin-bottom: 8px !important;
+    }
+    
+    #plus, #minus {
+        min-width: 38px;
+        height: 38px;
+        font-size: 1.1rem !important;
+        margin: 4px;
+    }
+    
+    .tellspace-container,
+    .wrapper2-container {
+        border-radius: 8px;
+    }
+    
+    .tellspace-container {
+        height: 38vh;
+        max-height: 38vh;
+        min-height: 220px;
+    }
+    
+    .wrapper2-container {
+        height: 25vh;
+        max-height: 25vh;
+        min-height: 150px;
+    }
+    
+    .right-container:has(#wrapper2.hidden) .tellspace-container {
+        height: 50vh;
+        min-height: 300px;
+    }
+    
+    #tellspace {
+        padding: 8px;
+    }
+    
+    .slider-container {
+        padding: 6px;
+        margin: 4px;
+        min-width: 500px;
+    }
+    
+    .floating-event-label,
+    .time-value-display,
+    .time-value-input {
+        font-size: 0.6rem;
+        padding: 2px 3px;
+        min-width: 24px;
+        min-height: 14px;
+        top: -20px;
+        border-radius: 3px;
+    }
+    
+    .floating-event-label {
+        left: -26px;
+        width: 26px;
+        max-width: 26px;
+    }
+    
+    .time-value-input,
+    .time-value-display {
+        right: -26px;
+        width: 26px;
+        max-width: 26px;
+    }
+    
+    .process-label {
+        font-size: 0.8rem;
+        padding: 2px 4px;
+        min-width: 25px;
+        margin-right: 4px;
+    }
+    
+    .increment {
+        width: 30px;
+        height: 18px;
+        font-size: 0.8rem;
+        margin-right: 4px;
+    }
+    
+    .event {
+        height: 10px;
+        width: 10px;
+        bottom: -4px;
+        border-width: 2px;
+    }
+    
+    .event.to {
+        height: 7px;
+        width: 7px;
+    }
+    
+    .slider-bone {
+        height: 2px;
+    }
+    
+    .message {
+        stroke-width: 2px;
+    }
+    
+    .difficulty {
+        padding: 8px;
+    }
+    
+    .gauge {
+        width: 80px;
+        height: 40px;
+    }
+    
+    .gauge-center .label {
+        font-size: 0.7em;
+        margin-top: 0.6em;
+    }
+    
+    .needle {
+        width: 42px;
+        height: 4px;
+    }
+    
+    .slice-colors .st {
+        border-top-width: 40px;
+        border-left-width: 40px;
+        border-right-width: 40px;
+    }
+    
+    #generatespace {
+        margin-top: 10px;
+    }
+    
+    .header-border {
+        padding: 8px;
+        border-radius: 8px;
+    }
+    
+    .header-border .heading {
+        font-size: 0.9em;
+        margin-top: -1.2em;
+    }
+    
+    .header-border .heading > span {
+        padding: 5px 8px;
+        font-size: 0.75em;
+    }
+    
+    .aparam {
+        padding: 6px;
+        border-radius: 6px;
+    }
+    
+    #generatespace h4 {
+        font-size: 0.7rem;
+    }
+    
+    #ordergenerate {
+        font-size: 1rem !important;
+        padding: 8px 10px !important;
+        min-height: 40px !important;
+        width: 95%;
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .input-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+    }
+    
+    .input-number-decrement,
+    .input-number-increment {
+        width: 20px;
+        height: 28px;
+        line-height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    /* Cycle space / error message responsive */
+    #iscycle {
+        width: 90vw;
+        font-size: 1rem;
+        padding: 0.4em 10px;
+    }
+    
+    /* Instructions Modal - mobile */
+    .instructions-modal-content {
+        margin: 0;
+        width: 100%;
+        max-height: 100vh;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .modal-header {
+        padding: 12px 45px 12px 15px;
+    }
+    
+    .modal-close {
+        width: 35px !important;
+        height: 35px !important;
+        top: 10px !important;
+        right: 10px !important;
+    }
+    
+    .header-content {
+        gap: 10px;
+    }
+    
+    .header-icon {
+        padding: 6px;
+    }
+    
+    .header-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .header-text h2 {
+        font-size: 1.1rem;
+    }
+    
+    .header-text p {
+        font-size: 0.8rem;
+    }
+    
+    .modal-body {
+        padding: 12px;
+        max-height: calc(100vh - 80px);
+    }
+    
+    .instructions-grid {
+        gap: 12px;
+    }
+    
+    .instruction-card {
+        padding: 12px;
+        border-radius: 10px;
+    }
+    
+    .instruction-card .instruction-icon {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 12px;
+    }
+    
+    .instruction-card .instruction-title {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+    
+    .instruction-card .instruction-list li {
+        font-size: 0.9rem;
+        padding: 5px 0;
+        line-height: 1.5;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 380px) {
+    .main-container {
+        padding: 5px;
+    }
+    
+    .control-panel {
+        padding: 5px;
+    }
+    
+    h3.cp {
+        font-size: 0.85rem;
+    }
+    
+    .btn, button {
+        font-size: 0.85rem !important;
+        padding: 6px !important;
+        min-height: 35px !important;
+    }
+    
+    #plus, #minus {
+        min-width: 35px;
+        height: 35px;
+        font-size: 1rem !important;
+    }
+    
+    .tellspace-container {
+        min-height: 200px;
+    }
+    
+    .wrapper2-container {
+        min-height: 130px;
+    }
+    
+    .slider-container {
+        min-width: 450px;
+    }
+    
+    .floating-event-label,
+    .time-value-display,
+    .time-value-input {
+        font-size: 0.55rem;
+        padding: 1px 2px;
+        min-width: 22px;
+        min-height: 12px;
+        top: -18px;
+        border-radius: 2px;
+    }
+    
+    .floating-event-label {
+        left: -24px;
+        width: 24px;
+        max-width: 24px;
+    }
+    
+    .time-value-input,
+    .time-value-display {
+        right: -24px;
+        width: 24px;
+        max-width: 24px;
+    }
+    
+    .gauge {
+        width: 70px;
+        height: 35px;
+    }
+    
+    .needle {
+        width: 36px;
+        height: 4px;
+    }
+    
+    .slice-colors .st {
+        border-top-width: 35px;
+        border-left-width: 35px;
+        border-right-width: 35px;
+    }
+}
+
+/* Landscape mode on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .main-container {
+        height: auto;
+        max-height: none;
+    }
+    
+    .tellspace-container {
+        height: 60vh;
+        min-height: 200px;
+    }
+    
+    .wrapper2-container {
+        height: 50vh;
+        min-height: 150px;
+    }
+    
+    .right-container:has(#wrapper2.hidden) .tellspace-container {
+        height: 80vh;
+        min-height: 250px;
+    }
+}
+
+/* Hide mobile warning - now responsive */
+.mobile-warning {
+    display: none !important;
+}
+
 #mobile-message {
-    text-align: center;
-    display: none;
+    display: none !important;
 }
